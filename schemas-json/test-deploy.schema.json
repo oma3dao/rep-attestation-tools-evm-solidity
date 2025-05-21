@@ -1,0 +1,50 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "TestDeploySchema",
+  "description": "A simple schema for testing deployment, UID generation, and various property types.",
+  "type": "object",
+  "properties": {
+    "schemaId": {
+      "type": "integer",
+      "description": "A unique identifier for this schema instance."
+    },
+    "msg9": {
+      "type": "string",
+      "description": "A test message."
+    },
+    "isActive": {
+      "type": "boolean",
+      "description": "A boolean flag."
+    },
+    "tags": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "An array of simple string tags."
+    },
+    "scores": {
+      "type": "array",
+      "items": {
+        "type": "integer"
+      },
+      "description": "An array of integer scores."
+    },
+    "optionalDescription": {
+      "type": ["string", "null"],
+      "description": "An optional string field that can be null."
+    },
+    "statusFlags": {
+      "type": "array",
+      "items": {
+        "type": "boolean"
+      },
+      "description": "An array of boolean flags."
+    }
+  },
+  "required": [
+    "schemaId",
+    "msg9",
+    "tags"
+  ]
+} 

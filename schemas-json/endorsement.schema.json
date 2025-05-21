@@ -1,0 +1,63 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://oma3.org/schemas/endorsement-v1.0.0.schema.json",
+  "title": "Endorsement",
+  "description": "A lightweight attestation indicating support, trust, or approval for a DID-identified subject. The 'attestationType' field may be used to distinguish informal endorsements from formal approvals.",
+  "$comment": "Implements OMA3 pattern: OnchainAttestation. See https://oma3.org/docs/schema-patterns#onchainattestation",
+  "type": "object",
+  "keywords": ["endorsement", "approval", "reputation", "trust", "organization", "attestation"],
+  "required": [
+    "attester",
+    "subject"
+  ],
+  "properties": {
+    "@context": {
+      "type": "string",
+      "description": "Optional JSON-LD context URI for semantic processing.",
+      "default": "https://oma3.org/context.jsonld"
+    },
+    "@type": {
+      "type": "string",
+      "description": "Semantic type identifier, typically 'Endorsement'.",
+      "default": "Endorsement"
+    },
+    "attester": {
+      "type": "string",
+      "description": "DID or address of the entity issuing the endorsement or approval."
+    },
+    "subject": {
+      "type": "string",
+      "description": "DID of the entity being endorsed or approved."
+    },
+    "purpose": {
+      "type": "string",
+      "description": "Optional short string indicating the reason or context of the endorsement or approval."
+    },
+    "version": {
+      "type": "string",
+      "description": "Optional semantic version of the subject being endorsed."
+    },
+    "attestationType": {
+      "type": "string",
+      "description": "Distinguishes attestation purpose. Use 'Endorsement' for informal support or 'Approval' for formal recognition."
+    },
+    "policyURI": {
+      "type": "string",
+      "format": "uri",
+      "description": "Optional URI pointing to the criteria or process used for formal approvals."
+    },
+    "effectiveAt": {
+      "type": "integer",
+      "description": "Optional Unix timestamp when the endorsement or approval becomes effective."
+    },
+    "expiresAt": {
+      "type": "integer",
+      "description": "Optional Unix timestamp after which the endorsement or approval expires."
+    },
+    "issuedAt": {
+      "type": "integer",
+      "description": "Optional Unix timestamp for when the attestation was issued."
+    }
+  },
+  "additionalProperties": false
+}

@@ -1,0 +1,13 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "WithResolver",
+  "description": "A schema with a custom resolver",
+  "type": "object",
+  "properties": {
+    "stringField": {
+      "type": "string",
+      "description": "A string field."
+    }
+  },
+  "required": ["stringField"]
+} 

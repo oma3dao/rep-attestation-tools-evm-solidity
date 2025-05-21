@@ -5,6 +5,7 @@ node_modules/
 .env
 .env.local
 .env.*.local
+.cursorrules
 
 # Compiled output
 dist/
@@ -34,13 +35,34 @@ Thumbs.db
 *.tmp
 *.tsbuildinfo
 
-# Ignore compiled or generated JSON output
-generated/
-schema-output.json
-schema-ids.json
+# Ignore temporary or unimportant files
+generated/*.tmp
+generated/*.log
+generated/TestDeploySchema.bas.json
+generated/TestDeploySchema.deployed.bas.json
 
 # Ignore schema deployment metadata (can be committed if version-controlled)
 schema-deployments/*.json
 
 # Ignore schema hashes (optional)
 schema-hashes.json
+
+# instructions
+/instructions
+
+# Hardhat files
+/cache
+/artifacts
+test-*.log
+ignition/
+
+# TypeChain files
+/typechain
+/typechain-types
+
+# solidity-coverage files
+/coverage
+/coverage.json
+
+# Hardhat Ignition default folder for deployments against a local node
+ignition/deployments/chain-31337

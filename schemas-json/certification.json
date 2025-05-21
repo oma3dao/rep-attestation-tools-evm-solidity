@@ -1,0 +1,103 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://oma3.org/schemas/certification-v0.2.schema.json",
+  "title": "Certification",
+  "description": "A flat schema for certifying that a subject has met the requirements of a defined certification program. Anchors immutable program data and supports optional subject and assessor metadata.",
+  "type": "object",
+  "keywords": ["certification", "compliance", "attestation", "program", "assessment", "reputation"],
+  "required": [
+    "attester",
+    "subject",
+    "programIdentifier",
+    "assessor"
+  ],
+  "properties": {
+    "@context": {
+      "type": "string",
+      "description": "Optional JSON-LD context URI.",
+      "default": "https://oma3.org/context.jsonld"
+    },
+    "@type": {
+      "type": "string",
+      "description": "Semantic type identifier, typically 'Certification'.",
+      "default": "Certification"
+    },
+    "attester": {
+      "type": "string",
+      "description": "DID of the Certification Body issuing the certification."
+    },
+    "subject": {
+      "type": "string",
+      "description": "DID of the product, system, or organization being certified."
+    },
+    "subjectOwner": {
+      "type": "string",
+      "description": "DID of the entity responsible for the subject."
+    },
+    "subjectMetadataURI": {
+      "type": "string",
+      "format": "uri",
+      "description": "Optional URI controlled by the subject that provides mutable, human-readable metadata."
+    },
+    "programIdentifier": {
+      "type": "string",
+      "description": "DID or URI of the certification program under which this certification was issued."
+    },
+    "programMetadataURI": {
+      "type": "string",
+      "format": "uri",
+      "description": "Optional URI for mutable, human-readable certification program info."
+    },
+    "anchoredDataURL": {
+      "type": "string",
+      "format": "uri",
+      "description": "Immutable URI containing the canonical certification program data (e.g., requirements, test plans)."
+    },
+    "anchoredDataAlgorithm": {
+      "type": "string",
+      "description": "Hashing algorithm used to generate anchoredDataHash (e.g., 'sha3-256')."
+    },
+    "anchoredDataHash": {
+      "type": "string",
+      "description": "Cryptographic hash of the content located at anchoredDataURL."
+    },
+    "assessor": {
+      "type": "string",
+      "description": "DID of the authorized assessor (test lab, auditor) who evaluated the subject."
+    },
+    "assessorMetadataURI": {
+      "type": "string",
+      "format": "uri",
+      "description": "Optional URI with human-readable info about the assessor (e.g., homepage, credentials)."
+    },
+    "certificationLevel": {
+      "type": "string",
+      "description": "Optional classification level of certification (e.g., 'Gold', 'Level 2')."
+    },
+    "version": {
+      "type": "string",
+      "description": "Software version of the certified subject."
+    },
+    "versionHW": {
+      "type": "string",
+      "description": "Hardware version of the certified subject, if applicable."
+    },
+    "effectiveAt": {
+      "type": "integer",
+      "description": "Unix timestamp (in seconds) when the certification becomes effective."
+    },
+    "expiresAt": {
+      "type": "integer",
+      "description": "Optional expiration timestamp (in seconds)."
+    },
+    "issuedAt": {
+      "type": "integer",
+      "description": "Optional timestamp (in seconds) when the certification was issued."
+    },
+    "attestationType": {
+      "type": "string",
+      "description": "Optional label (e.g., 'Certification') to help downstream tools interpret this attestation."
+    }
+  },
+  "additionalProperties": false
+}

@@ -1,0 +1,94 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://oma3.org/schemas/userreview-v0.2.schema.json",
+  "title": "UserReview",
+  "description": "A flat schema for structured 1–5 star reviews of tokenized applications or digital services. Designed for onchain attestation and offchain anchoring.",
+  "type": "object",
+  "keywords": ["review", "rating", "feedback", "UX", "app", "attestation", "reputation"],
+  "required": [
+    "attester",
+    "subject",
+    "ratingValue"
+  ],
+  "properties": {
+    "@context": {
+      "type": "string",
+      "description": "Optional JSON-LD context URI for semantic processing.",
+      "default": "https://oma3.org/context.jsonld"
+    },
+    "@type": {
+      "type": "string",
+      "description": "Semantic type identifier, typically 'UserReview'.",
+      "default": "UserReview"
+    },
+    "attester": {
+      "type": "string",
+      "description": "Ethereum address or DID of the entity submitting the review."
+    },
+    "subject": {
+      "type": "string",
+      "description": "DID or URI of the application or entity being reviewed."
+    },
+    "version": {
+      "type": "string",
+      "description": "Version of the reviewed subject (e.g., app version)."
+    },
+    "summary": {
+      "type": "string",
+      "description": "Short title or headline for the review (e.g., 'Loved it', 'Buggy experience')."
+    },
+    "reviewBody": {
+      "type": "string",
+      "description": "Free-form text describing the user's experience or feedback."
+    },
+    "author": {
+      "type": "string",
+      "description": "DID, handle, or name of the user who wrote the review."
+    },
+    "datePublished": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Timestamp when the review was written or published, in ISO 8601 format."
+    },
+    "ratingValue": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 5,
+      "description": "Numerical rating from 1 (worst) to 5 (best)."
+    },
+    "screenshotUrls": {
+      "type": "array",
+      "description": "Optional screenshots showing the app during review.",
+      "items": {
+        "type": "string",
+        "format": "uri"
+      }
+    },
+    "anchoredDataURL": {
+      "type": "string",
+      "format": "uri",
+      "description": "URI pointing to offchain review content (e.g., IPFS, Cloudinary, Arweave)."
+    },
+    "anchoredDataAlgorithm": {
+      "type": "string",
+      "description": "Hashing algorithm used for 'anchoredDataHash' (e.g., 'sha3-256')."
+    },
+    "anchoredDataHash": {
+      "type": "string",
+      "description": "Cryptographic hash of the content located at 'anchoredDataURL'."
+    },
+    "attestationType": {
+      "type": "string",
+      "description": "Type identifier for this attestation (e.g., 'UserReview')."
+    },
+    "issuedAt": {
+      "type": "integer",
+      "description": "Unix timestamp (in seconds) for when the review was submitted."
+    },
+    "expiresAt": {
+      "type": "integer",
+      "description": "Optional expiration timestamp for the attestation."
+    }
+  },
+  "additionalProperties": false
+}

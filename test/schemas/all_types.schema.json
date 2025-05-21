@@ -1,0 +1,32 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "AllTypes",
+  "description": "A schema with all supported types",
+  "type": "object",
+  "properties": {
+    "stringField": {
+      "type": "string",
+      "description": "A string field."
+    },
+    "uint64Field": {
+      "type": "integer",
+      "description": "A uint64 field."
+    },
+    "boolField": {
+      "type": "boolean",
+      "description": "A boolean field."
+    },
+    "arrayField": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "An array of strings."
+    },
+    "optionalField": {
+      "type": ["string", "null"],
+      "description": "An optional string field."
+    }
+  },
+  "required": ["stringField", "uint64Field", "boolField"]
+} 
