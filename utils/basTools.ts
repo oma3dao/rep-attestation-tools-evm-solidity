@@ -14,19 +14,14 @@ export function calculateSchemaUID(
   resolverAddress: string,
   revocable: boolean
 ): string {
-  // Calculate UID using only the schema string
-  return ethers.keccak256(
-    ethers.toUtf8Bytes(schema)
+  // Use solidityPacked as recommended by BAS
+  const packed = ethers.solidityPacked(
+    ['string', 'address', 'bool'],
+    [schema, resolverAddress, revocable]
   );
   
-  // Original approach - kept for reference
-  // return ethers.keccak256(
-  //   ethers.AbiCoder.defaultAbiCoder().encode(
-  //     ['string', 'address', 'bool'],
-  //     [schema, resolverAddress, revocable]
-  //   )
-  // );
-}
+  return ethers.keccak256(packed);
+  }
 
 /**
  * Verifies that a schema with the specified UID exists

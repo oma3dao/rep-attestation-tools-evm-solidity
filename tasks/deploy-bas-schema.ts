@@ -63,12 +63,12 @@ task("deploy-bas-schema", "Deploy a BAS schema from a .bas.json file")
     const schemaRegistry = new SchemaRegistry(schemaRegistryAddress);
     schemaRegistry.connect(signer);
 
-    // Calculate the expected schema UID (now using only the schema string)
+    // Calculate the expected schema UID (now using all three parameters)
     const resolverAddress = basSchema.resolver && basSchema.resolver !== "" ? basSchema.resolver : ZERO_ADDRESS;
     let expectedSchemaUID = calculateSchemaUID(
       basSchema.schema, 
-      resolverAddress, // Not used in new calculation but kept for API compatibility
-      basSchema.revocable // Not used in new calculation but kept for API compatibility
+      resolverAddress,
+      basSchema.revocable
     );
     console.log(`Estimated Schema UID: ${formatSchemaUID(expectedSchemaUID)}`);
     

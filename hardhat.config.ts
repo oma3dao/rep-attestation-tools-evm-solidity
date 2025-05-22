@@ -1,7 +1,6 @@
 import { HardhatUserConfig } from "hardhat/config";
 import "@nomicfoundation/hardhat-toolbox";
-import "./tasks/generate-bas-object";
-import "./tasks/deploy-bas-schema";
+import "./tasks"; // Import all tasks from the index file
 import * as fs from "fs";
 import * as path from "path";
 import { config as dotenvConfig } from "dotenv";
