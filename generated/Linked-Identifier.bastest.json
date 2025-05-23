@@ -1,0 +1,6 @@
+{
+  "name": "Linked-Identifier",
+  "schema": "string subject, string linkedId, string linkedIdType, string method, string issuedAt, string validUntil, string attestationType",
+  "revocable": false,
+  "resolver": "0x0000000000000000000000000000000000000000"
+}

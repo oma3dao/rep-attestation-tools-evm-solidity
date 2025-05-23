@@ -1,0 +1,55 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://wivity.com/schemas/linked-identifier-attestation.v1.modelb.json",
+  "title": "Linked Identifier Attestation (Third-Party Certified)",
+  "description": "An attestation where the attester (a trusted third party) asserts that the subject controls the linked identifier.",
+  "type": "object",
+  "required": [
+    "attester",
+    "subject",
+    "linkedId",
+    "linkedIdType",
+    "method",
+    "issuedAt"
+  ],
+  "properties": {
+    "attester": {
+      "type": "string",
+      "description": "CAIP-2 address or DID of the third-party entity making the assertion. This entity has verified the linkage between the subject and linkedId."
+    },
+    "subject": {
+      "type": "string",
+      "description": "CAIP-2 address or DID of the subject (typically a wallet) that is claimed to control the linked identifier."
+    },
+    "linkedId": {
+      "type": "string",
+      "description": "The identifier being claimed as controlled by the subject (e.g., a did:web, email address, or domain)."
+    },
+    "linkedIdType": {
+      "type": "string",
+      "enum": ["did:web", "did:key", "email", "twitter", "github", "caip2", "other"],
+      "description": "Type or namespace of the linkedId being asserted."
+    },
+    "method": {
+      "type": "string",
+      "enum": ["http-file", "dns-txt", "email-challenge", "social-post", "manual", "oauth", "other"],
+      "description": "Verification method used by the attester to confirm the subject's control of the linkedId."
+    },
+    "issuedAt": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Timestamp when the attestation was issued."
+    },
+    "validUntil": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Optional expiration timestamp after which the attestation is no longer considered valid."
+    },
+    "attestationType": {
+      "type": "string",
+      "enum": ["domain-ownership", "social-handle", "email-control", "identity-link", "account-recovery", "group-membership", "reputation-score", "other"],
+      "description": "Optional classification of the attestation for filtering and indexing purposes."
+    }
+  },
+  "additionalProperties": false
+}
