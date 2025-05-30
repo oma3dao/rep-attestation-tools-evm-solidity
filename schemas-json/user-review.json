@@ -14,16 +14,19 @@
     "@context": {
       "type": "string",
       "description": "Optional JSON-LD context URI for semantic processing.",
-      "default": "https://oma3.org/context.jsonld"
+      "default": "https://oma3.org/context.jsonld",
+      "x-oma3-skip-reason": "metadata"
     },
     "@type": {
       "type": "string",
       "description": "Semantic type identifier, typically 'UserReview'.",
-      "default": "UserReview"
+      "default": "UserReview",
+      "x-oma3-skip-reason": "metadata"
     },
     "attester": {
       "type": "string",
-      "description": "Ethereum address or DID of the entity submitting the review."
+      "description": "Ethereum address or DID of the entity submitting the review.",
+      "x-oma3-skip-reason": "bas"
     },
     "subject": {
       "type": "string",

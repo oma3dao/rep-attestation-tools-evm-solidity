@@ -14,16 +14,19 @@
     "@context": {
       "type": "string",
       "description": "Optional JSON-LD context URI for semantic processing.",
-      "default": "https://oma3.org/context.jsonld"
+      "default": "https://oma3.org/context.jsonld",
+      "x-oma3-skip-reason": "metadata"
     },
     "@type": {
       "type": "string",
       "description": "Semantic type identifier, typically 'Endorsement'.",
-      "default": "Endorsement"
+      "default": "Endorsement",
+      "x-oma3-skip-reason": "metadata"
     },
     "attester": {
       "type": "string",
-      "description": "DID or address of the entity issuing the endorsement or approval."
+      "description": "DID or address of the entity issuing the endorsement or approval.",
+      "x-oma3-skip-reason": "bas"
     },
     "subject": {
       "type": "string",

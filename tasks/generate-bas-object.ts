@@ -11,6 +11,7 @@ interface JsonSchemaProperty {
   description?: string;
   format?: string; // e.g., "uri"
   items?: JsonSchemaProperty; // For type: "array", defines the type of array items
+  "x-oma3-skip-reason"?: string; // Custom extension to indicate fields that should be skipped for BAS
   // ... other JSON schema keywords for properties if needed
 }
 
@@ -104,12 +105,14 @@ function buildSchemaString(properties?: { [key: string]: JsonSchemaProperty }): 
   const abiFields: string[] = [];
   for (const key in properties) {
     if (Object.prototype.hasOwnProperty.call(properties, key)) {
-      // Skip 'attester' as BAS includes it automatically
-      if (key.toLowerCase() === 'attester') continue;
-      // Skip fields like '@context' and '@type' often used in JSON-LD
-      if (key.startsWith('@')) continue;
-
       const property = properties[key];
+      
+      // Skip fields that have x-oma3-skip-reason (metadata, bas, etc.)
+      if (property["x-oma3-skip-reason"]) {
+        console.log(`Skipping field '${key}' due to x-oma3-skip-reason: ${property["x-oma3-skip-reason"]}`);
+        continue;
+      }
+
       // Pass the whole property object to the mapping function
       const abiType = mapJsonSchemaPropertyToAbiType(property);
       if (abiType) {

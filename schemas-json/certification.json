@@ -15,16 +15,19 @@
     "@context": {
       "type": "string",
       "description": "Optional JSON-LD context URI.",
-      "default": "https://oma3.org/context.jsonld"
+      "default": "https://oma3.org/context.jsonld",
+      "x-oma3-skip-reason": "metadata"
     },
     "@type": {
       "type": "string",
       "description": "Semantic type identifier, typically 'Certification'.",
-      "default": "Certification"
+      "default": "Certification",
+      "x-oma3-skip-reason": "metadata"
     },
     "attester": {
       "type": "string",
-      "description": "DID of the Certification Body issuing the certification."
+      "description": "DID of the Certification Body issuing the certification.",
+      "x-oma3-skip-reason": "bas"
     },
     "subject": {
       "type": "string",

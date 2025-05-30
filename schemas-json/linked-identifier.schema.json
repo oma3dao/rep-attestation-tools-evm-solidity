@@ -2,7 +2,7 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://wivity.com/schemas/linked-identifier-attestation.v1.modelb.json",
   "title": "Linked Identifier Attestation (Third-Party Certified)",
-  "description": "An attestation where the attester (a trusted third party) asserts that the subject controls the linked identifier.",
+  "description": "An attestation where the attester (a trusted third party) asserts that the subject controls the linked identifier, effectively attesting that two identities are owned by the same entity.",
   "type": "object",
   "required": [
     "attester",
@@ -13,9 +13,22 @@
     "issuedAt"
   ],
   "properties": {
+    "@context": {
+      "type": "string",
+      "description": "Optional JSON-LD context URI for semantic processing.",
+      "default": "https://oma3.org/context.jsonld",
+      "x-oma3-skip-reason": "metadata"
+    },
+    "@type": {
+      "type": "string",
+      "description": "Semantic type identifier, typically 'LinkedIdentifierAttestation'.",
+      "default": "LinkedIdentifierAttestation",
+      "x-oma3-skip-reason": "metadata"
+    },
     "attester": {
       "type": "string",
-      "description": "CAIP-2 address or DID of the third-party entity making the assertion. This entity has verified the linkage between the subject and linkedId."
+      "description": "CAIP-2 address or DID of the third-party entity making the assertion. This entity has verified the linkage between the subject and linkedId.",
+      "x-oma3-skip-reason": "bas"
     },
     "subject": {
       "type": "string",
