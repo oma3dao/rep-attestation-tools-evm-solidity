@@ -25,40 +25,49 @@
     },
     "attester": {
       "type": "string",
+      "title": "Attester ID",
       "description": "DID or address of the entity issuing the endorsement or approval.",
       "x-oma3-skip-reason": "bas"
     },
     "subject": {
       "type": "string",
+      "title": "Subject ID",
       "description": "DID of the entity being endorsed or approved."
     },
     "purpose": {
       "type": "string",
+      "title": "Purpose",
       "description": "Optional short string indicating the reason or context of the endorsement or approval."
     },
     "version": {
       "type": "string",
+      "title": "Subject Version",
       "description": "Optional semantic version of the subject being endorsed."
     },
     "attestationType": {
       "type": "string",
+      "title": "Attestation Type",
       "description": "Distinguishes attestation purpose. Use 'Endorsement' for informal support or 'Approval' for formal recognition."
     },
     "policyURI": {
       "type": "string",
       "format": "uri",
+      "title": "Policy URI",
       "description": "Optional URI pointing to the criteria or process used for formal approvals."
     },
     "effectiveAt": {
       "type": "integer",
+      "title": "Effective Date",
       "description": "Optional Unix timestamp when the endorsement or approval becomes effective."
     },
     "expiresAt": {
       "type": "integer",
+      "title": "Expiration Date",
       "description": "Optional Unix timestamp after which the endorsement or approval expires."
     },
     "issuedAt": {
       "type": "integer",
+      "title": "Issued Date",
       "description": "Optional Unix timestamp for when the attestation was issued."
     }
   },

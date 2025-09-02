@@ -25,42 +25,51 @@
     },
     "attester": {
       "type": "string",
+      "title": "Attester ID",
       "description": "Ethereum address or DID of the entity submitting the review.",
       "x-oma3-skip-reason": "bas"
     },
     "subject": {
       "type": "string",
-      "description": "DID or URI of the application or entity being reviewed."
+      "title": "Subject ID",
+      "description": "DID or URI of the thing being reviewed."
     },
     "version": {
       "type": "string",
+      "title": "SubjectVersion",
       "description": "Version of the reviewed subject (e.g., app version)."
     },
     "summary": {
       "type": "string",
+      "title": "Review Summary",
       "description": "Short title or headline for the review (e.g., 'Loved it', 'Buggy experience')."
     },
     "reviewBody": {
       "type": "string",
+      "title": "Review",
       "description": "Free-form text describing the user's experience or feedback."
     },
     "author": {
       "type": "string",
+      "title": "Author ID",
       "description": "DID, handle, or name of the user who wrote the review."
     },
     "datePublished": {
       "type": "string",
       "format": "date-time",
+      "title": "Date Published",
       "description": "Timestamp when the review was written or published, in ISO 8601 format."
     },
     "ratingValue": {
       "type": "integer",
       "minimum": 1,
       "maximum": 5,
+      "title": "Rating",
       "description": "Numerical rating from 1 (worst) to 5 (best)."
     },
     "screenshotUrls": {
       "type": "array",
+      "title": "Screenshots",
       "description": "Optional screenshots showing the app during review.",
       "items": {
         "type": "string",
@@ -70,26 +79,32 @@
     "anchoredDataURL": {
       "type": "string",
       "format": "uri",
+      "title": "Anchored Data URL",
       "description": "URI pointing to offchain review content (e.g., IPFS, Cloudinary, Arweave)."
     },
     "anchoredDataAlgorithm": {
       "type": "string",
+      "title": "Anchored Data Hash Algorithm",
       "description": "Hashing algorithm used for 'anchoredDataHash' (e.g., 'sha3-256')."
     },
     "anchoredDataHash": {
       "type": "string",
+      "title": "Anchored Data Hash",
       "description": "Cryptographic hash of the content located at 'anchoredDataURL'."
     },
     "attestationType": {
       "type": "string",
+      "title": "Attestation Type",
       "description": "Type identifier for this attestation (e.g., 'UserReview')."
     },
     "issuedAt": {
       "type": "integer",
+      "title": "Issued Date",
       "description": "Unix timestamp (in seconds) for when the review was submitted."
     },
     "expiresAt": {
       "type": "integer",
+      "title": "Expiration Date",
       "description": "Optional expiration timestamp for the attestation."
     }
   },

@@ -8,7 +8,6 @@
     "attester",
     "subject",
     "linkedId",
-    "linkedIdType",
     "method",
     "issuedAt"
   ],
@@ -27,40 +26,46 @@
     },
     "attester": {
       "type": "string",
-      "description": "CAIP-2 address or DID of the third-party entity making the assertion. This entity has verified the linkage between the subject and linkedId.",
+      "title": "Attester ID",
+      "description": "DID of the third-party entity making the assertion. This entity has verified the linkage between the subject and linkedId.",
       "x-oma3-skip-reason": "bas"
     },
     "subject": {
       "type": "string",
-      "description": "CAIP-2 address or DID of the subject (typically a wallet) that is claimed to control the linked identifier."
+      "title": "Subject ID",
+      "description": "DID of the subject (such as did:pkh for wallet addresses or did:web for web domains) that is claimed to control the linked identifier."
     },
     "linkedId": {
       "type": "string",
+      "title": "Linked Identifier",
       "description": "The identifier being claimed as controlled by the subject (e.g., a did:web, email address, or domain)."
     },
     "linkedIdType": {
       "type": "string",
-      "enum": ["did:web", "did:key", "email", "twitter", "github", "caip2", "other"],
-      "description": "Type or namespace of the linkedId being asserted."
+      "title": "Linked ID Type",
+      "description": "Type or namespace of the linkedId being asserted. Examples: did:web (for websites), did:key (for keys), email, twitter, github, facebook, discord, telegram, lens, farcaster, or any other well-known identifier type."
     },
     "method": {
       "type": "string",
       "enum": ["http-file", "dns-txt", "email-challenge", "social-post", "manual", "oauth", "other"],
+      "title": "Verification Method",
       "description": "Verification method used by the attester to confirm the subject's control of the linkedId."
     },
     "issuedAt": {
       "type": "string",
       "format": "date-time",
+      "title": "Issued Date",
       "description": "Timestamp when the attestation was issued."
     },
     "validUntil": {
       "type": "string",
       "format": "date-time",
+      "title": "Valid Until",
       "description": "Optional expiration timestamp after which the attestation is no longer considered valid."
     },
     "attestationType": {
       "type": "string",
-      "enum": ["domain-ownership", "social-handle", "email-control", "identity-link", "account-recovery", "group-membership", "reputation-score", "other"],
+      "title": "Attestation Type",
       "description": "Optional classification of the attestation for filtering and indexing purposes."
     }
   },
