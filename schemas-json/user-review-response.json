@@ -1,0 +1,81 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://oma3.org/schemas/user-review-response-v0.1.schema.json",
+  "title": "UserReviewResponse",
+  "description": "A response from an app owner or representative to a UserReview attestation. Uses refUID to reference the original review.",
+  "type": "object",
+  "keywords": ["review", "response", "feedback", "reputation", "attestation"],
+  "required": [
+    "attester",
+    "subject",
+    "responseBody"
+  ],
+  "properties": {
+    "@context": {
+      "type": "string",
+      "description": "Optional JSON-LD context URI for semantic processing.",
+      "default": "https://oma3.org/context.jsonld",
+      "x-oma3-skip-reason": "metadata"
+    },
+    "@type": {
+      "type": "string",
+      "description": "Semantic type identifier, typically 'UserReviewResponse'.",
+      "default": "UserReviewResponse",
+      "x-oma3-skip-reason": "metadata"
+    },
+    "attester": {
+      "type": "string",
+      "title": "Attester ID",
+      "description": "Ethereum address of the entity or representative responding to the review.",
+      "x-oma3-skip-reason": "bas"
+    },
+    "subject": {
+      "type": "string",
+      "title": "Subject ID",
+      "description": "Address of the original reviewer being responded to."
+    },
+    "responseBody": {
+      "type": "string",
+      "title": "Response",
+      "description": "Free-form text containing the response to the review."
+    },
+    "datePublished": {
+      "type": "string",
+      "format": "date-time",
+      "title": "Date Published",
+      "description": "Timestamp when the response was written or published, in ISO 8601 format."
+    },
+    "anchoredDataURL": {
+      "type": "string",
+      "format": "uri",
+      "title": "Anchored Data URL",
+      "description": "URI pointing to offchain response content (e.g., IPFS, Cloudinary, Arweave)."
+    },
+    "anchoredDataAlgorithm": {
+      "type": "string",
+      "title": "Anchored Data Hash Algorithm",
+      "description": "Hashing algorithm used for 'anchoredDataHash' (e.g., 'sha3-256')."
+    },
+    "anchoredDataHash": {
+      "type": "string",
+      "title": "Anchored Data Hash",
+      "description": "Cryptographic hash of the content located at 'anchoredDataURL'."
+    },
+    "attestationType": {
+      "type": "string",
+      "title": "Attestation Type",
+      "description": "Type identifier for this attestation (e.g., 'UserReviewResponse')."
+    },
+    "issuedAt": {
+      "type": "integer",
+      "title": "Issued Date",
+      "description": "Unix timestamp (in seconds) for when the response was submitted."
+    },
+    "expiresAt": {
+      "type": "integer",
+      "title": "Expiration Date",
+      "description": "Optional expiration timestamp for the attestation."
+    }
+  },
+  "additionalProperties": false
+}
