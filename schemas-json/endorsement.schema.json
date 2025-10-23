@@ -34,6 +34,13 @@
       "title": "Subject ID",
       "description": "DID of the entity being endorsed or approved."
     },
+    "subjectDidHash": {
+      "type": "string",
+      "title": "Subject DID Hash",
+      "description": "Keccak256 hash of the canonicalized subject DID, encoded as 0x-prefixed hex string (32 bytes).",
+      "pattern": "^0x[a-fA-F0-9]{64}$",
+      "x-oma3-skip-reason": "computed"
+    },
     "purpose": {
       "type": "string",
       "title": "Purpose",

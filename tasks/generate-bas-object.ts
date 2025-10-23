@@ -10,6 +10,7 @@ interface JsonSchemaProperty {
   type: string | string[]; // e.g., "string", "integer", ["string", "null"]
   description?: string;
   format?: string; // e.g., "uri"
+  pattern?: string; // e.g., "^0x[a-fA-F0-9]{64}$" for validation
   items?: JsonSchemaProperty; // For type: "array", defines the type of array items
   "x-oma3-skip-reason"?: string; // Custom extension to indicate fields that should be skipped for BAS
   // ... other JSON schema keywords for properties if needed
@@ -84,7 +85,12 @@ function mapJsonSchemaPropertyToAbiType(jsonProperty: JsonSchemaProperty): strin
 
   // Handling for scalar (non-array) types
   switch (typeLower) {
-    case 'string': return 'string';
+    case 'string':
+      // Map hex hash pattern to bytes32 for EVM efficiency
+      if (jsonProperty.pattern && jsonProperty.pattern === '^0x[a-fA-F0-9]{64}$') {
+        return 'bytes32';
+      }
+      return 'string';
     case 'integer': case 'number': return 'uint256';
     case 'boolean': return 'bool';
     default:
@@ -106,7 +112,7 @@ function buildSchemaString(properties?: { [key: string]: JsonSchemaProperty }): 
   for (const key in properties) {
     if (Object.prototype.hasOwnProperty.call(properties, key)) {
       const property = properties[key];
-      
+
       // Skip fields that have x-oma3-skip-reason (metadata, bas, etc.)
       if (property["x-oma3-skip-reason"]) {
         console.log(`Skipping field '${key}' due to x-oma3-skip-reason: ${property["x-oma3-skip-reason"]}`);
@@ -147,11 +153,11 @@ task("generate-bas-object", "Generate a BAS-compatible object from a JSON Schema
     let parsedSchemaContent: any;
     try {
       parsedSchemaContent = JSON.parse(schemaFileContent);
-    } catch (e: any) { 
+    } catch (e: any) {
       console.error(`Error parsing JSON schema file at ${schemaFilePath}: ${e.message}`);
       process.exit(1);
     }
-    
+
     const inputSchema: InputJsonSchema = parsedSchemaContent as InputJsonSchema;
 
     // Check for title and fail if none exists
@@ -183,7 +189,7 @@ task("generate-bas-object", "Generate a BAS-compatible object from a JSON Schema
 
     // Determine output filename suffix based on network
     const networkSuffix = hre.network.name === 'bsc' ? 'bas' : 'bastest';
-    
+
     const outputFilePath = path.join(outputDir, `${basName}.${networkSuffix}.json`);
     fs.writeFileSync(outputFilePath, JSON.stringify(basSchemaObject, null, 2));
     console.log(`Successfully generated BAS object at: ${outputFilePath}`);
