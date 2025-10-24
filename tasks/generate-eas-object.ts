@@ -7,12 +7,19 @@ import { ethers } from 'ethers';
 
 // --- JSON Schema Interfaces (Simplified for our use) ---
 interface JsonSchemaProperty {
-  type: string | string[]; // e.g., "string", "integer", ["string", "null"]
+  type?: string | string[]; // e.g., "string", "integer", ["string", "null"]
   description?: string;
   format?: string; // e.g., "uri"
   pattern?: string; // e.g., "^0x[a-fA-F0-9]{64}$" for validation
   items?: JsonSchemaProperty; // For type: "array", defines the type of array items
   "x-oma3-skip-reason"?: string; // Custom extension to indicate fields that should be skipped for EAS
+  oneOf?: JsonSchemaProperty[];
+  anyOf?: JsonSchemaProperty[];
+  allOf?: JsonSchemaProperty[];
+  if?: JsonSchemaProperty;
+  then?: JsonSchemaProperty;
+  else?: JsonSchemaProperty;
+  properties?: { [key: string]: JsonSchemaProperty };
   // ... other JSON schema keywords for properties if needed
 }
 
@@ -37,42 +44,140 @@ interface EasSchemaObject {
 // --- Helper Functions ---
 
 /**
+ * Pick the priority type from a list of types
+ * Priority: object > array > string > integer/number > boolean
+ */
+function pickPriorityType(types: string[] | undefined): string | undefined {
+  if (!types || types.length === 0) return undefined;
+  const order = ["object", "array", "string", "integer", "number", "boolean"];
+  for (const t of order) {
+    if (types.includes(t)) return t;
+  }
+  return types[0];
+}
+
+/**
+ * Collect types from oneOf/anyOf/allOf branches
+ */
+function collectTypesFromBranches(s: JsonSchemaProperty): string[] {
+  const out: string[] = [];
+  const branches = [
+    ...(Array.isArray(s.oneOf) ? s.oneOf : []),
+    ...(Array.isArray(s.anyOf) ? s.anyOf : []),
+    ...(Array.isArray(s.allOf) ? s.allOf : []),
+  ];
+  for (const b of branches) {
+    if (typeof b?.type === "string") out.push(b.type);
+    if (Array.isArray(b?.type)) out.push(...b.type);
+    // Also check if/then/else within branches
+    if (b?.then?.properties) {
+      for (const prop of Object.values(b.then.properties)) {
+        if (typeof prop?.type === "string") out.push(prop.type);
+        if (Array.isArray(prop?.type)) out.push(...prop.type);
+      }
+    }
+    if (b?.else?.properties) {
+      for (const prop of Object.values(b.else.properties)) {
+        if (typeof prop?.type === "string") out.push(prop.type);
+        if (Array.isArray(prop?.type)) out.push(...prop.type);
+      }
+    }
+  }
+  return out;
+}
+
+/**
+ * Resolve the effective JSON type for a property, handling conditionals
+ */
+function resolveJsonType(propSchema: JsonSchemaProperty): string | undefined {
+  if (!propSchema) return undefined;
+
+  // Direct type
+  if (typeof propSchema.type === "string") return propSchema.type.toLowerCase();
+  if (Array.isArray(propSchema.type)) {
+    return pickPriorityType(propSchema.type.map(String).map(s => s.toLowerCase()));
+  }
+
+  // Check branches (oneOf/anyOf/allOf)
+  const branchTypes = collectTypesFromBranches(propSchema).map(s => s.toLowerCase());
+  if (branchTypes.length) return pickPriorityType(branchTypes);
+
+  // Default to undefined (will be treated as string in fallback)
+  return undefined;
+}
+
+/**
+ * Map JSON type to EAS ABI type
+ */
+function jsonTypeToAbi(effectiveType: string | undefined, ctx: { propName: string; pattern?: string; xAbi?: string }): string {
+  // Explicit ABI hint takes precedence
+  if (ctx.xAbi === "bytes32") return "bytes32";
+
+  const t = effectiveType?.toLowerCase();
+
+  switch (t) {
+    case "object":
+      return "string"; // NEW: serialize objects as strings for EAS ABI
+    case "string":
+      // Map hex hash pattern to bytes32 for EVM efficiency (permissive regex)
+      if (ctx.pattern && /0x[a-fA-F0-9]{64}/.test(ctx.pattern)) {
+        return 'bytes32';
+      }
+      return "string";
+    case "integer":
+    case "number":
+      return "uint256";
+    case "boolean":
+      return "bool";
+    default:
+      // Fallback: treat as string (especially for conditional fields like `purpose`)
+      return "string";
+  }
+}
+
+/**
  * Maps a JSON Schema property definition (including its type and items for arrays)
  * to an EAS ABI type string.
  * @param jsonProperty The JSON Schema property definition.
+ * @param propName The property name (for context)
  * @returns EAS ABI type string or null if not mappable.
  */
-function mapJsonSchemaPropertyToAbiType(jsonProperty: JsonSchemaProperty): string | null {
-  let typeToProcess: string;
+function mapJsonSchemaPropertyToAbiType(jsonProperty: JsonSchemaProperty, propName: string): string | null {
+  // Special case: purpose is always string for EAS stability (handles root-level conditionals)
+  if (propName === "purpose") return "string";
 
-  // Determine the primary type if jsonProperty.type is an array (e.g., ["string", "null"])
-  if (Array.isArray(jsonProperty.type)) {
-    typeToProcess = jsonProperty.type.find(t => t !== "null") || jsonProperty.type[0];
-  } else {
-    typeToProcess = jsonProperty.type;
-  }
+  // Resolve the effective type (handles conditionals, unions, etc.)
+  const effectiveType = resolveJsonType(jsonProperty);
 
-  const typeLower = typeToProcess.toLowerCase();
+  // Handle arrays specially
+  if (effectiveType === 'array') {
+    let itemType: string | undefined;
 
-  if (typeLower === 'array') {
-    if (jsonProperty.items && jsonProperty.items.type) {
-      // Get the type of the items within the array
-      let itemSchemaType: string;
-      if (Array.isArray(jsonProperty.items.type)) {
-        itemSchemaType = jsonProperty.items.type.find(t => t !== "null") || jsonProperty.items.type[0];
-      } else {
-        itemSchemaType = jsonProperty.items.type;
+    if (jsonProperty.items) {
+      // Try to resolve item type (handles nested schemas)
+      itemType = resolveJsonType(jsonProperty.items);
+
+      // Fallback to direct type if available
+      if (!itemType && jsonProperty.items.type) {
+        if (Array.isArray(jsonProperty.items.type)) {
+          itemType = jsonProperty.items.type.find(t => t !== "null") || jsonProperty.items.type[0];
+        } else {
+          itemType = jsonProperty.items.type;
+        }
       }
+    }
 
+    if (itemType) {
       let baseAbiType: string | null = null;
-      switch (itemSchemaType.toLowerCase()) {
+      switch (itemType.toLowerCase()) {
         case 'string': baseAbiType = 'string'; break;
         case 'integer': case 'number': baseAbiType = 'uint256'; break;
         case 'boolean': baseAbiType = 'bool'; break;
+        case 'object': baseAbiType = 'string'; break; // Objects in arrays become strings
         // Note: EAS/ABI doesn't typically support arrays of complex objects directly in this flat schema string.
         // Arrays of arrays are also not standard in this simple mapping.
         default:
-          console.warn(`Unsupported 'items' type "${itemSchemaType}" in array property. Skipping array property.`);
+          console.warn(`Unsupported 'items' type "${itemType}" in array property. Skipping array property.`);
           return null;
       }
       return `${baseAbiType}[]`; // e.g., string[]
@@ -83,19 +188,8 @@ function mapJsonSchemaPropertyToAbiType(jsonProperty: JsonSchemaProperty): strin
   }
 
   // Handling for scalar (non-array) types
-  switch (typeLower) {
-    case 'string':
-      // Map hex hash pattern to bytes32 for EVM efficiency
-      if (jsonProperty.pattern && jsonProperty.pattern === '^0x[a-fA-F0-9]{64}$') {
-        return 'bytes32';
-      }
-      return 'string';
-    case 'integer': case 'number': return 'uint256';
-    case 'boolean': return 'bool';
-    default:
-      console.warn(`Unsupported JSON Schema type "${typeLower}" encountered. Skipping.`);
-      return null;
-  }
+  const xAbi = (jsonProperty as any)["x-oma3-abi"];
+  return jsonTypeToAbi(effectiveType, { propName, pattern: jsonProperty.pattern, xAbi });
 }
 
 /**
@@ -119,7 +213,7 @@ function buildSchemaString(properties?: { [key: string]: JsonSchemaProperty }): 
       }
 
       // Pass the whole property object to the mapping function
-      const abiType = mapJsonSchemaPropertyToAbiType(property);
+      const abiType = mapJsonSchemaPropertyToAbiType(property, key);
       if (abiType) {
         abiFields.push(`${abiType} ${key}`);
       }

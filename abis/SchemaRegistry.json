@@ -1,0 +1,47 @@
+[
+  {
+    "type": "function",
+    "name": "getSchema",
+    "inputs": [
+      {
+        "name": "uid",
+        "type": "bytes32"
+      }
+    ],
+    "outputs": [
+      {
+        "name": "",
+        "type": "tuple",
+        "components": [
+          { "name": "uid", "type": "bytes32" },
+          { "name": "resolver", "type": "address" },
+          { "name": "revocable", "type": "bool" },
+          { "name": "schema", "type": "string" },
+          { "name": "index", "type": "uint256" }
+        ]
+      }
+    ],
+    "stateMutability": "view"
+  },
+  {
+    "type": "function",
+    "name": "register",
+    "inputs": [
+      { "name": "schema", "type": "string" },
+      { "name": "resolver", "type": "address" },
+      { "name": "revocable", "type": "bool" }
+    ],
+    "outputs": [
+      { "name": "", "type": "bytes32" }
+    ],
+    "stateMutability": "nonpayable"
+  },
+  {
+    "type": "event",
+    "name": "Registered",
+    "inputs": [
+      { "name": "uid", "type": "bytes32", "indexed": true },
+      { "name": "registerer", "type": "address", "indexed": true }
+    ]
+  }
+]

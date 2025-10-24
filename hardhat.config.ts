@@ -17,6 +17,24 @@ export const EAS_SCHEMA_REGISTRY_ADDRESSES = {
   omachainMainnet: "0x0000000000000000000000000000000000000000" // TODO: Update when mainnet is available
 };
 
+// EAS Core contract addresses (for creating attestations)
+export const EAS_CONTRACT_ADDRESSES = {
+  omachainTestnet: "0xDc120C00E62822329A4d8C7808f5a43C9CbfC1f8",
+  omachainMainnet: "0x0000000000000000000000000000000000000000" // TODO: Update when mainnet is available
+};
+
+// Network contracts configuration (for EAS tasks)
+export const NETWORK_CONTRACTS = {
+  omachainTestnet: {
+    easContract: EAS_CONTRACT_ADDRESSES.omachainTestnet,
+    easSchemaRegistry: EAS_SCHEMA_REGISTRY_ADDRESSES.omachainTestnet
+  },
+  omachainMainnet: {
+    easContract: EAS_CONTRACT_ADDRESSES.omachainMainnet,
+    easSchemaRegistry: EAS_SCHEMA_REGISTRY_ADDRESSES.omachainMainnet
+  }
+};
+
 // Load deployment key from SSH directory
 const deploymentKeyPath = path.join(process.env.HOME || '', '.ssh', 'test-evm-deployment-key');
 if (fs.existsSync(deploymentKeyPath)) {

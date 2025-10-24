@@ -1,11 +1,18 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://oma3.org/schemas/endorsement-v1.0.0.schema.json",
+  "$id": "https://oma3.org/schemas/endorsement-v1.1.0.schema.json",
   "title": "Endorsement",
   "description": "A lightweight attestation indicating support, trust, or approval for a DID-identified subject. The 'attestationType' field may be used to distinguish informal endorsements from formal approvals.",
   "$comment": "Implements OMA3 pattern: OnchainAttestation. See https://oma3.org/docs/schema-patterns#onchainattestation",
   "type": "object",
-  "keywords": ["endorsement", "approval", "reputation", "trust", "organization", "attestation"],
+  "keywords": [
+    "endorsement",
+    "approval",
+    "reputation",
+    "trust",
+    "organization",
+    "attestation"
+  ],
   "required": [
     "attester",
     "subject"
@@ -42,9 +49,8 @@
       "x-oma3-skip-reason": "computed"
     },
     "purpose": {
-      "type": "string",
       "title": "Purpose",
-      "description": "Optional short string indicating the reason or context of the endorsement or approval."
+      "description": "Optional short string indicating the reason or context of the endorsement or approval. For Approval attestations, this is a structured object; for Endorsements, this is free text."
     },
     "version": {
       "type": "string",
@@ -78,5 +84,46 @@
       "description": "Optional Unix timestamp for when the attestation was issued."
     }
   },
-  "additionalProperties": false
+  "additionalProperties": false,
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "attestationType": {
+            "const": "Approval"
+          }
+        },
+        "required": [
+          "attestationType"
+        ]
+      },
+      "then": {
+        "properties": {
+          "purpose": {
+            "type": "object",
+            "properties": {
+              "type": {
+                "type": "string"
+              },
+              "extensions": {
+                "type": "object",
+                "additionalProperties": true
+              }
+            },
+            "required": [
+              "type"
+            ],
+            "additionalProperties": true
+          }
+        }
+      },
+      "else": {
+        "properties": {
+          "purpose": {
+            "type": "string"
+          }
+        }
+      }
+    }
+  ]
 }
