@@ -1,0 +1,6 @@
+{
+  "name": "User-Review",
+  "schema": "string subject, string version, string summary, string reviewBody, string author, string datePublished, uint256 ratingValue, string[] screenshotUrls, string anchoredDataURL, string anchoredDataAlgorithm, string anchoredDataHash, string attestationType, uint256 issuedAt, uint256 expiresAt",
+  "revocable": false,
+  "resolver": "0x0000000000000000000000000000000000000000"
+}

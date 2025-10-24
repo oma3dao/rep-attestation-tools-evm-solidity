@@ -1,0 +1,6 @@
+{
+  "name": "User-Review-Response",
+  "schema": "string subject, string responseBody, string datePublished, string anchoredDataURL, string anchoredDataAlgorithm, string anchoredDataHash, string attestationType, uint256 issuedAt, uint256 expiresAt",
+  "revocable": false,
+  "resolver": "0x0000000000000000000000000000000000000000"
+}

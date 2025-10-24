@@ -1,7 +1,7 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://wivity.com/schemas/linked-identifier-attestation.v1.modelb.json",
-  "title": "Linked Identifier Attestation (Third-Party Certified)",
+  "title": "Linked Identifier",
   "description": "An attestation where the attester (a trusted third party) asserts that the subject controls the linked identifier, effectively attesting that two identities are owned by the same entity.",
   "type": "object",
   "required": [

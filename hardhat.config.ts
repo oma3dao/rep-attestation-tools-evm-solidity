@@ -11,6 +11,12 @@ export const BAS_SCHEMA_REGISTRY_ADDRESSES = {
   bscTestnet: "0x08C8b8417313fF130526862f90cd822B55002D72" // SchemaRegistry on BSC Testnet
 };
 
+// EAS Schema Registry contract addresses
+export const EAS_SCHEMA_REGISTRY_ADDRESSES = {
+  omachainTestnet: "0x9a530e23370C7d820FbaB2E0a884c58be5E4e919",
+  omachainMainnet: "0x0000000000000000000000000000000000000000" // TODO: Update when mainnet is available
+};
+
 // Load deployment key from SSH directory
 const deploymentKeyPath = path.join(process.env.HOME || '', '.ssh', 'test-evm-deployment-key');
 if (fs.existsSync(deploymentKeyPath)) {
@@ -28,6 +34,16 @@ const config: HardhatUserConfig = {
     bscTestnet: {
       url: process.env.BSC_TESTNET_RPC_URL || "https://data-seed-prebsc-1-s1.binance.org:8545/",
       chainId: 97,
+      accounts: process.env.PRIVATE_KEY ? [process.env.PRIVATE_KEY] : [],
+    },
+    omachainTestnet: {
+      url: process.env.OMACHAIN_TESTNET_RPC_URL || "https://rpc.testnet.chain.oma3.org/",
+      chainId: 66238,
+      accounts: process.env.PRIVATE_KEY ? [process.env.PRIVATE_KEY] : [],
+    },
+    omachainMainnet: {
+      url: process.env.OMACHAIN_MAINNET_RPC_URL || "https://rpc.chain.oma3.org/", // TODO: Update when mainnet is available
+      chainId: 6623,
       accounts: process.env.PRIVATE_KEY ? [process.env.PRIVATE_KEY] : [],
     },
   },

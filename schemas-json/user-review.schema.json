@@ -1,7 +1,7 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://oma3.org/schemas/userreview-v0.2.schema.json",
-  "title": "UserReview",
+  "title": "User Review",
   "description": "A flat schema for structured 1–5 star reviews of tokenized applications or digital services. Designed for onchain attestation and offchain anchoring.",
   "type": "object",
   "keywords": ["review", "rating", "feedback", "UX", "app", "attestation", "reputation"],

@@ -1,7 +1,7 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://oma3.org/schemas/user-review-response-v0.1.schema.json",
-  "title": "UserReviewResponse",
+  "title": "User Review Response",
   "description": "A response from an app owner or representative to a UserReview attestation. Uses refUID to reference the original review.",
   "type": "object",
   "keywords": ["review", "response", "feedback", "reputation", "attestation"],
