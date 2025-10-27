@@ -20,12 +20,157 @@ OMA3 standards (such as specifications and schemas) will always remain open and 
 
 This repository contains EVM-compatible smart contracts and developer tools for verifying, validating, and interacting with **structured attestations** used in the OMA3 reputation system. These attestations power use cases like:
 
-- ✅ **Approval** – granting permissions or eligibility
+- ✅ **Security Assessment** – putting security audits onchain
+- ✅ **Linked Identifier** – attesting to shared control of two IDs
 - ✅ **Endorsement** – signaling reputational support
 - ✅ **Certification** – verifying conformance via test labs or assessors
-- ✅ **UserReview** – user-generated reviews with ratings
+- ✅ **User- eview** – user-generated reviews with ratings
+- ✅ **User Review Response** – subject response to user-generated reviews
 
 All attestations are based on canonical JSON schema definitions (to be split into a separate repo later), and are compatible with onchain attestation services such as [BAS](https://bas.bnbchain.org/) and [EAS](https://eas.ethers.org/).
+
+## Creating Schemas
+
+Schemas in this repository are defined using [JSON Schema](https://json-schema.org/) (Draft 2020-12), which provides a standard way to describe the structure and validation rules for attestation data. For the complete JSON Schema specification, see the [official documentation](https://json-schema.org/specification).
+
+All schema definitions are located in the `schemas-json/` directory. Each schema file follows the naming convention `[schema-name].schema.json` (e.g., `endorsement.schema.json`, `security-assessment.schema.json`).
+
+### OMA3 Schema Extensions
+
+In addition to standard JSON Schema properties, OMA3 schemas support custom extension properties (prefixed with `x-oma3-`) that control how schemas are processed and rendered in UIs:
+
+#### `x-oma3-skip-reason`
+
+Excludes a field from form generation. Common values:
+
+- `"metadata"` - JSON-LD context fields (`@context`, `@type`)
+- `"eas"` - Fields handled by the attestation service (e.g., `attester`)
+- `"computed"` - Fields calculated from other data (e.g., `subjectDidHash`)
+- `"default"` - Fields with auto-generated defaults that don't need user input
+
+**Example:**
+```json
+{
+  "attester": {
+    "type": "string",
+    "x-oma3-skip-reason": "eas"
+  }
+}
+```
+
+#### `x-oma3-subtype`
+
+Specifies the semantic meaning of a field to control UI rendering and validation. Supported values:
+
+- `"timestamp"` - Unix timestamp in seconds (for `integer` fields). Renders as a datetime picker in UIs.
+
+**Example:**
+```json
+{
+  "issuedAt": {
+    "type": "integer",
+    "title": "Issued Date",
+    "x-oma3-subtype": "timestamp",
+    "x-oma3-default": "current-timestamp"
+  }
+}
+```
+
+#### `x-oma3-default`
+
+Specifies auto-generation behavior for field defaults. Supported values:
+
+- `"current-timestamp"` - Auto-generates Unix timestamp in seconds (for `integer` fields with `x-oma3-subtype: "timestamp"`)
+- `"current-datetime"` - Auto-generates ISO 8601 datetime string (for `string` fields with `format: "date-time"`)
+- `"current-date"` - Auto-generates ISO 8601 date string (for `string` fields with `format: "date"`)
+
+**Example:**
+```json
+{
+  "issuedAt": {
+    "type": "integer",
+    "title": "Issued Date",
+    "x-oma3-subtype": "timestamp",
+    "x-oma3-default": "current-timestamp"
+  }
+}
+```
+
+#### `x-oma3-nested`
+
+Controls rendering style for object fields (boolean):
+
+- `true` - Renders with a container, border, and heading (grouped/nested style)
+- `false` or omitted - Renders sub-fields flat at the same level as other fields
+
+**Example:**
+```json
+{
+  "payload": {
+    "type": "object",
+    "title": "Assessment Payload",
+    "x-oma3-nested": true,
+    "properties": {
+      "assessmentKind": { "type": "string" }
+    }
+  }
+}
+```
+
+### Schema Design Best Practices
+
+1. **Use descriptive titles** - Field titles appear as labels in UIs, so make them clear and self-explanatory
+2. **Provide descriptions** - Help users understand what data to enter
+3. **Use consistent timestamp formats** - Prefer `integer` with Unix timestamps for consistency and EAS compatibility
+4. **Mark required fields** - Include fields in the `required` array at the appropriate level
+5. **Use enums for fixed choices** - Provides better UX with dropdowns instead of free text
+6. **Leverage x-oma3 extensions** - Skip unnecessary fields, auto-generate defaults, and control UI layout
+
+### Example Schema Structure
+
+```json
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://oma3.org/schemas/example-v1.0.0.schema.json",
+  "title": "Example Schema",
+  "description": "An example attestation schema",
+  "type": "object",
+  "required": ["subject", "issuedAt"],
+  "properties": {
+    "attester": {
+      "type": "string",
+      "x-oma3-skip-reason": "eas"
+    },
+    "subject": {
+      "type": "string",
+      "title": "Subject ID"
+    },
+    "issuedAt": {
+      "type": "integer",
+      "title": "Issued Date",
+      "x-oma3-subtype": "timestamp",
+      "x-oma3-default": "current-timestamp"
+    },
+    "expiresAt": {
+      "type": "integer",
+      "title": "Expiration Date",
+      "x-oma3-subtype": "timestamp"
+    },
+    "payload": {
+      "type": "object",
+      "x-oma3-nested": true,
+      "properties": {
+        "rating": {
+          "type": "integer",
+          "title": "Rating",
+          "minimum": 1,
+          "maximum": 5
+        }
+      }
+    }
+  }
+}
+```
 
 ## Working with EAS Schemas on OMAchain
 

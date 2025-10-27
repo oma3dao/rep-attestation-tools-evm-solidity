@@ -1,9 +1,8 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://oma3.org/schemas/endorsement-v1.1.0.schema.json",
+  "$id": "https://oma3.org/schemas/endorsement-v1.1.0.json",
   "title": "Endorsement",
   "description": "A lightweight attestation indicating support, trust, or approval for a DID-identified subject. The 'attestationType' field may be used to distinguish informal endorsements from formal approvals.",
-  "$comment": "Implements OMA3 pattern: OnchainAttestation. See https://oma3.org/docs/schema-patterns#onchainattestation",
   "type": "object",
   "keywords": [
     "endorsement",
@@ -34,7 +33,7 @@
       "type": "string",
       "title": "Attester ID",
       "description": "DID or address of the entity issuing the endorsement or approval.",
-      "x-oma3-skip-reason": "bas"
+      "x-oma3-skip-reason": "eas"
     },
     "subject": {
       "type": "string",
@@ -48,19 +47,23 @@
       "pattern": "^0x[a-fA-F0-9]{64}$",
       "x-oma3-skip-reason": "computed"
     },
-    "purpose": {
-      "title": "Purpose",
-      "description": "Optional short string indicating the reason or context of the endorsement or approval. For Approval attestations, this is a structured object; for Endorsements, this is free text."
-    },
-    "version": {
+    "payloadVersion": {
       "type": "string",
-      "title": "Subject Version",
-      "description": "Optional semantic version of the subject being endorsed."
+      "title": "Payload Version",
+      "description": "Semver describing the shape of 'payload' (additive changes may bump this without a new schema UID).",
+      "default": "1.0.0"
     },
-    "attestationType": {
+    "payloadSpecURI": {
       "type": "string",
-      "title": "Attestation Type",
-      "description": "Distinguishes attestation purpose. Use 'Endorsement' for informal support or 'Approval' for formal recognition."
+      "format": "uri",
+      "title": "Payload Specification URI",
+      "description": "URI to the human/machine-readable spec for the current payloadVersion (e.g., IPFS/HTTPS)."
+    },
+    "payload": {
+      "type": "object",
+      "title": "Endorsement Payload",
+      "description": "Endorsement details (schema-agnostic; no predefined keys).",
+      "additionalProperties": true
     },
     "policyURI": {
       "type": "string",
@@ -68,62 +71,30 @@
       "title": "Policy URI",
       "description": "Optional URI pointing to the criteria or process used for formal approvals."
     },
+    "issuedAt": {
+      "type": "integer",
+      "minimum": 0,
+      "title": "Issued Date",
+      "description": "Unix timestamp (in seconds) when the attestation was issued."
+    },
     "effectiveAt": {
       "type": "integer",
+      "minimum": 0,
       "title": "Effective Date",
       "description": "Optional Unix timestamp when the endorsement or approval becomes effective."
     },
     "expiresAt": {
       "type": "integer",
+      "minimum": 0,
       "title": "Expiration Date",
       "description": "Optional Unix timestamp after which the endorsement or approval expires."
     },
-    "issuedAt": {
-      "type": "integer",
-      "title": "Issued Date",
-      "description": "Optional Unix timestamp for when the attestation was issued."
+    "attestationType": {
+      "type": "string",
+      "title": "Attestation Type",
+      "description": "Type identifier for this attestation (e.g., 'SecurityAssessment').",
+      "default": "SecurityAssessment"
     }
   },
-  "additionalProperties": false,
-  "allOf": [
-    {
-      "if": {
-        "properties": {
-          "attestationType": {
-            "const": "Approval"
-          }
-        },
-        "required": [
-          "attestationType"
-        ]
-      },
-      "then": {
-        "properties": {
-          "purpose": {
-            "type": "object",
-            "properties": {
-              "type": {
-                "type": "string"
-              },
-              "extensions": {
-                "type": "object",
-                "additionalProperties": true
-              }
-            },
-            "required": [
-              "type"
-            ],
-            "additionalProperties": true
-          }
-        }
-      },
-      "else": {
-        "properties": {
-          "purpose": {
-            "type": "string"
-          }
-        }
-      }
-    }
-  ]
+  "additionalProperties": false
 }

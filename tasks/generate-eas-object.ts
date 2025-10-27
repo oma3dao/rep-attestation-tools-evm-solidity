@@ -12,7 +12,7 @@ interface JsonSchemaProperty {
   format?: string; // e.g., "uri"
   pattern?: string; // e.g., "^0x[a-fA-F0-9]{64}$" for validation
   items?: JsonSchemaProperty; // For type: "array", defines the type of array items
-  "x-oma3-skip-reason"?: string; // Custom extension to indicate fields that should be skipped for EAS
+  "x-oma3-skip-reason"?: string; // Custom extension to indicate fields that should be skipped (e.g., "eas", "metadata", "computed")
   oneOf?: JsonSchemaProperty[];
   anyOf?: JsonSchemaProperty[];
   allOf?: JsonSchemaProperty[];
@@ -206,7 +206,7 @@ function buildSchemaString(properties?: { [key: string]: JsonSchemaProperty }): 
     if (Object.prototype.hasOwnProperty.call(properties, key)) {
       const property = properties[key];
 
-      // Skip fields that have x-oma3-skip-reason (metadata, eas, etc.)
+      // Skip fields that have x-oma3-skip-reason (metadata, eas, computed, etc.)
       if (property["x-oma3-skip-reason"]) {
         console.log(`Skipping field '${key}' due to x-oma3-skip-reason: ${property["x-oma3-skip-reason"]}`);
         continue;

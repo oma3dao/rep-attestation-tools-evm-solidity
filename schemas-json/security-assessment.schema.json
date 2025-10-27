@@ -1,0 +1,262 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://oma3.org/schemas/security-assessment-v1.0.0.schema.json",
+  "title": "Security Assessment",
+  "description": "Use this form to record a security assessment onchain",
+  "type": "object",
+  "keywords": [
+    "security",
+    "pentest",
+    "audit",
+    "assessment",
+    "vulnerability",
+    "attestation",
+    "reputation"
+  ],
+  "required": [
+    "attester",
+    "subject",
+    "payload",
+    "payloadVersion",
+    "issuedAt"
+  ],
+  "properties": {
+    "@context": {
+      "type": "string",
+      "description": "Optional JSON-LD context URI for semantic processing.",
+      "default": "https://oma3.org/context.jsonld",
+      "x-oma3-skip-reason": "metadata"
+    },
+    "@type": {
+      "type": "string",
+      "description": "Semantic type identifier, typically 'SecurityAssessment'.",
+      "default": "SecurityAssessment",
+      "x-oma3-skip-reason": "metadata"
+    },
+    "attester": {
+      "type": "string",
+      "title": "Attester ID",
+      "description": "DID or address of the assessment issuer.",
+      "x-oma3-skip-reason": "eas"
+    },
+    "subject": {
+      "type": "string",
+      "title": "Subject ID",
+      "description": "ID of the assessed application/contract/service. Select an ID type below and enter the proper identity."
+    },
+    "subjectDidHash": {
+      "type": "string",
+      "title": "Subject DID Hash",
+      "description": "Keccak256 hash of the canonicalized subject DID, encoded as 0x-prefixed hex string (32 bytes).",
+      "pattern": "^0x[a-fA-F0-9]{64}$",
+      "x-oma3-skip-reason": "computed"
+    },
+    "payloadVersion": {
+      "type": "string",
+      "title": "Payload Version",
+      "description": "Semver describing the shape of 'payload' (additive changes may bump this without a new schema UID).",
+      "default": "1.0.0",
+      "x-oma3-skip-reason": "default"
+    },
+    "payloadSpecDigest": {
+      "type": "object",
+      "title": "Payload Specification Digest",
+      "description": "Integrity digest for payloadSpecURI.",
+      "x-oma3-skip-reason": "default",
+      "properties": {
+        "algo": {
+          "type": "string",
+          "title": "Payload Spec Hash Algorithm",
+          "enum": [
+            "keccak256",
+            "sha256"
+          ],
+          "default": "keccak256",
+          "x-oma3-skip-reason": "default",
+          "description": "Hash algorithm used for payload specification digest. Per OMATrust spec, only keccak256 and sha256 are supported."
+        },
+        "hex": {
+          "type": "string",
+          "title": "Payload Spec Hash Value",
+          "pattern": "^0x[a-fA-F0-9]+$",
+          "default": "",
+          "x-oma3-skip-reason": "default",
+          "description": "0x-prefixed hex digest of the payload specification."
+        }
+      },
+      "additionalProperties": false
+    },
+    "payload": {
+      "type": "object",
+      "title": "Assessment Payload",
+      "description": "Assessment details. Evolvable without changing the envelope. When stored on-chain via EAS, this object is JSON-stringified.",
+      "properties": {
+        "assessmentKind": {
+          "type": "string",
+          "enum": [
+            "pentest",
+            "security-audit",
+            "code-review",
+            "vulnerability-scan"
+          ],
+          "title": "Assessment Kind",
+          "description": "High-level category of the assessment."
+        },
+        "period": {
+          "type": "object",
+          "title": "Assessment Timeframe",
+          "description": "When the assessment occurred.",
+          "x-oma3-skip-reason": "unused",
+          "properties": {
+            "start": {
+              "type": "integer",
+              "minimum": 0,
+              "title": "Assessment Start Time",
+              "description": "Unix timestamp (in seconds) for when the assessment began. OK to leave empty.",
+              "x-oma3-subtype": "timestamp"
+            },
+            "end": {
+              "type": "integer",
+              "minimum": 0,
+              "title": "Assessment End Time",
+              "description": "Unix timestamp (in seconds) for when the assessment completed. OK to leave empty.",
+              "x-oma3-subtype": "timestamp"
+            }
+          },
+          "additionalProperties": false
+        },
+        "methodURI": {
+          "type": "string",
+          "format": "uri",
+          "title": "Methodology URI",
+          "description": "Methodology / SOP documentation."
+        },
+        "reportURI": {
+          "type": "string",
+          "format": "uri",
+          "title": "Report URI",
+          "description": "Human-readable report location (may be mutable)."
+        },
+        "reportDigest": {
+          "type": "object",
+          "title": "Report Digest",
+          "description": "Content digest of the report for integrity verification.",
+          "properties": {
+            "algo": {
+              "type": "string",
+              "title": "Report Hash Algorithm",
+              "enum": [
+                "keccak256",
+                "sha256"
+              ],
+              "default": "keccak256",
+              "description": "Hash algorithm used for report digest computation. Per OMATrust spec, only keccak256 and sha256 are supported."
+            },
+            "hex": {
+              "type": "string",
+              "title": "Report Hash Value",
+              "pattern": "^0x[a-fA-F0-9]+$",
+              "description": "0x-prefixed hex digest of the canonical report bytes."
+            }
+          },
+          "additionalProperties": false
+        },
+        "outcome": {
+          "type": "string",
+          "enum": [
+            "pass",
+            "pass-with-findings",
+            "fail",
+            "informational"
+          ],
+          "title": "Assessment Outcome",
+          "description": "Overall outcome of the assessment."
+        },
+        "metrics": {
+          "type": "object",
+          "title": "Finding Metrics",
+          "description": "Optional summarized finding counts.",
+          "x-oma3-skip-reason": "unused",
+          "properties": {
+            "critical": {
+              "type": "number",
+              "title": "Critical Findings",
+              "minimum": 0,
+              "description": "Number of critical severity findings."
+            },
+            "high": {
+              "type": "number",
+              "title": "High Findings",
+              "minimum": 0,
+              "description": "Number of high severity findings."
+            },
+            "medium": {
+              "type": "number",
+              "title": "Medium Findings",
+              "minimum": 0,
+              "description": "Number of medium severity findings."
+            },
+            "low": {
+              "type": "number",
+              "title": "Low Findings",
+              "minimum": 0,
+              "description": "Number of low severity findings."
+            },
+            "info": {
+              "type": "number",
+              "title": "Informational Findings",
+              "minimum": 0,
+              "description": "Number of informational findings."
+            }
+          },
+          "additionalProperties": false
+        },
+        "policyLinks": {
+          "type": "array",
+          "title": "Policy Links",
+          "description": "Zero or more policy/process links relevant to this assessment.",
+          "x-oma3-skip-reason": "unused",
+          "items": {
+            "type": "string",
+            "format": "uri"
+          }
+        },
+        "extensions": {
+          "type": "object",
+          "title": "Extensions",
+          "description": "Vendor-specific fields. Namespaced keys recommended.",
+          "x-oma3-skip-reason": "unused",
+          "additionalProperties": true
+        }
+      },
+      "required": [
+        "assessmentKind"
+      ],
+      "additionalProperties": true
+    },
+    "issuedAt": {
+      "type": "integer",
+      "minimum": 0,
+      "title": "Issued Date",
+      "description": "Unix timestamp (in seconds) when the attestation was issued. Default is the current time.",
+      "x-oma3-subtype": "timestamp",
+      "x-oma3-default": "current-timestamp"
+    },
+    "effectiveAt": {
+      "type": "integer",
+      "minimum": 0,
+      "title": "Effective Date",
+      "description": "Optional Unix timestamp (in seconds) when the assessment becomes effective. Default is the current time.",
+      "x-oma3-subtype": "timestamp",
+      "x-oma3-default": "current-timestamp"
+    },
+    "expiresAt": {
+      "type": "integer",
+      "minimum": 0,
+      "title": "Expiration Date",
+      "description": "Unix timestamp (in seconds) after which the assessment expires. Leave empty if the assessment does not expire.",
+      "x-oma3-subtype": "timestamp"
+    }
+  },
+  "additionalProperties": false
+}

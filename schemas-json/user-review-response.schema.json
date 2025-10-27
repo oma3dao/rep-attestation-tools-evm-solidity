@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://oma3.org/schemas/user-review-response-v0.1.schema.json",
+  "$id": "https://oma3.org/schemas/user-review-response-v1.0.0.json",
   "title": "User Review Response",
   "description": "A response from an app owner or representative to a UserReview attestation. Uses refUID to reference the original review.",
   "type": "object",
@@ -27,7 +27,7 @@
       "type": "string",
       "title": "Attester ID",
       "description": "Ethereum address of the entity or representative responding to the review.",
-      "x-oma3-skip-reason": "bas"
+      "x-oma3-skip-reason": "eas"
     },
     "subject": {
       "type": "string",

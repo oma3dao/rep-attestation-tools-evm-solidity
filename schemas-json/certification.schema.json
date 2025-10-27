@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://oma3.org/schemas/certification-v0.2.schema.json",
+  "$id": "https://oma3.org/schemas/certification-v1.0.0.json",
   "title": "Certification",
   "description": "A flat schema for certifying that a subject has met the requirements of a defined certification program. Anchors immutable program data and supports optional subject and assessor metadata.",
   "type": "object",
@@ -28,7 +28,7 @@
       "type": "string",
       "title": "Certification Body ID",
       "description": "DID of the Certification Body issuing the certification.",
-      "x-oma3-skip-reason": "bas"
+      "x-oma3-skip-reason": "eas"
     },
     "subject": {
       "type": "string",

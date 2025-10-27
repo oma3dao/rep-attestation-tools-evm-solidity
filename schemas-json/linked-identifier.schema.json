@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://wivity.com/schemas/linked-identifier-attestation.v1.modelb.json",
+  "$id": "https://oma3.org/schemas/linked-identifier.v1.0.0.json",
   "title": "Linked Identifier",
   "description": "An attestation where the attester (a trusted third party) asserts that the subject controls the linked identifier, effectively attesting that two identities are owned by the same entity.",
   "type": "object",
@@ -28,7 +28,7 @@
       "type": "string",
       "title": "Attester ID",
       "description": "DID of the third-party entity making the assertion. This entity has verified the linkage between the subject and linkedId.",
-      "x-oma3-skip-reason": "bas"
+      "x-oma3-skip-reason": "eas"
     },
     "subject": {
       "type": "string",
@@ -47,7 +47,15 @@
     },
     "method": {
       "type": "string",
-      "enum": ["http-file", "dns-txt", "email-challenge", "social-post", "manual", "oauth", "other"],
+      "enum": [
+        "http-file",
+        "dns-txt",
+        "email-challenge",
+        "social-post",
+        "manual",
+        "oauth",
+        "other"
+      ],
       "title": "Verification Method",
       "description": "Verification method used by the attester to confirm the subject's control of the linkedId."
     },
