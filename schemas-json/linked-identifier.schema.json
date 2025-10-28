@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://oma3.org/schemas/linked-identifier.v1.0.0.json",
+  "$id": "https://reputation.omatrust.org/schemas/linked-identifier/attestation/1.0.0.json",
   "title": "Linked Identifier",
   "description": "An attestation where the attester (a trusted third party) asserts that the subject controls the linked identifier, effectively attesting that two identities are owned by the same entity.",
   "type": "object",
@@ -33,17 +33,21 @@
     "subject": {
       "type": "string",
       "title": "Subject ID",
-      "description": "DID of the subject (such as did:pkh for wallet addresses or did:web for web domains) that is claimed to control the linked identifier."
+      "format": "did",
+      "description": "DID of the subject (such as did:pkh for wallet addresses or did:web for web domains) that is claimed to control the linked identifier.",
+      "maxLength": 128
     },
     "linkedId": {
       "type": "string",
       "title": "Linked Identifier",
-      "description": "The identifier being claimed as controlled by the subject (e.g., a did:web, email address, or domain)."
+      "description": "The identifier being claimed as controlled by the subject (e.g., a did:web, email address, or domain).",
+      "maxLength": 256
     },
     "linkedIdType": {
       "type": "string",
       "title": "Linked ID Type",
-      "description": "Type or namespace of the linkedId being asserted. Examples: did:web (for websites), did:key (for keys), email, twitter, github, facebook, discord, telegram, lens, farcaster, or any other well-known identifier type."
+      "description": "Type or namespace of the linkedId being asserted. Examples: did:web (for websites), did:key (for keys), email, twitter, github, facebook, discord, telegram, lens, farcaster, or any other well-known identifier type.",
+      "maxLength": 100
     },
     "method": {
       "type": "string",
@@ -60,21 +64,27 @@
       "description": "Verification method used by the attester to confirm the subject's control of the linkedId."
     },
     "issuedAt": {
-      "type": "string",
-      "format": "date-time",
+      "type": "integer",
+      "minimum": 0,
       "title": "Issued Date",
-      "description": "Timestamp when the attestation was issued."
+      "description": "Unix timestamp (in seconds) when the attestation was issued. Default is the current time.",
+      "x-oma3-subtype": "timestamp",
+      "x-oma3-default": "current-timestamp"
     },
-    "validUntil": {
-      "type": "string",
-      "format": "date-time",
-      "title": "Valid Until",
-      "description": "Optional expiration timestamp after which the attestation is no longer considered valid."
+    "effectiveAt": {
+      "type": "integer",
+      "minimum": 0,
+      "title": "Effective Date",
+      "description": "Optional Unix timestamp (in seconds) when the assessment becomes effective. Default is the current time.",
+      "x-oma3-subtype": "timestamp",
+      "x-oma3-default": "current-timestamp"
     },
-    "attestationType": {
-      "type": "string",
-      "title": "Attestation Type",
-      "description": "Optional classification of the attestation for filtering and indexing purposes."
+    "expiresAt": {
+      "type": "integer",
+      "minimum": 0,
+      "title": "Expiration Date",
+      "description": "Unix timestamp (in seconds) after which the assessment expires. Leave empty if the assessment does not expire.",
+      "x-oma3-subtype": "timestamp"
     }
   },
   "additionalProperties": false

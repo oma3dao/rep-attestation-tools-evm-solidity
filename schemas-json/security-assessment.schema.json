@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://oma3.org/schemas/security-assessment-v1.0.0.schema.json",
+  "$id": "https://reputation.omatrust.org/schemas/security-assessment/attestation/1.1.0.json",
   "title": "Security Assessment",
   "description": "Use this form to record a security assessment onchain",
   "type": "object",
@@ -42,7 +42,9 @@
     "subject": {
       "type": "string",
       "title": "Subject ID",
-      "description": "ID of the assessed application/contract/service. Select an ID type below and enter the proper identity."
+      "format": "did",
+      "description": "ID of the assessed application/contract/service. Select an ID type below and enter the proper identity.",
+      "maxLength": 128
     },
     "subjectDidHash": {
       "type": "string",
@@ -56,6 +58,16 @@
       "title": "Payload Version",
       "description": "Semver describing the shape of 'payload' (additive changes may bump this without a new schema UID).",
       "default": "1.0.0",
+      "maxLength": 50,
+      "x-oma3-skip-reason": "default"
+    },
+    "payloadSpecURI": {
+      "type": "string",
+      "format": "uri",
+      "title": "Payload Specification URI",
+      "description": "URI to the JSON schema specification for this attestation type.",
+      "default": "https://reputation.omatrust.org/schemas/security-assessment/payload/1.0.0.json",
+      "maxLength": 256,
       "x-oma3-skip-reason": "default"
     },
     "payloadSpecDigest": {
@@ -80,6 +92,7 @@
           "title": "Payload Spec Hash Value",
           "pattern": "^0x[a-fA-F0-9]+$",
           "default": "",
+          "maxLength": 200,
           "x-oma3-skip-reason": "default",
           "description": "0x-prefixed hex digest of the payload specification."
         }
@@ -129,13 +142,15 @@
           "type": "string",
           "format": "uri",
           "title": "Methodology URI",
-          "description": "Methodology / SOP documentation."
+          "description": "Methodology / SOP documentation.",
+          "maxLength": 256
         },
         "reportURI": {
           "type": "string",
           "format": "uri",
           "title": "Report URI",
-          "description": "Human-readable report location (may be mutable)."
+          "description": "Human-readable report location (may be mutable).",
+          "maxLength": 256
         },
         "reportDigest": {
           "type": "object",
@@ -156,7 +171,8 @@
               "type": "string",
               "title": "Report Hash Value",
               "pattern": "^0x[a-fA-F0-9]+$",
-              "description": "0x-prefixed hex digest of the canonical report bytes."
+              "description": "0x-prefixed hex digest of the canonical report bytes.",
+              "maxLength": 200
             }
           },
           "additionalProperties": false
@@ -218,7 +234,8 @@
           "x-oma3-skip-reason": "unused",
           "items": {
             "type": "string",
-            "format": "uri"
+            "format": "uri",
+            "maxLength": 256
           }
         },
         "extensions": {

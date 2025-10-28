@@ -1,8 +1,8 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://oma3.org/schemas/certification-v1.0.0.json",
+  "$id": "https://reputation.omatrust.org/schemas/certification/attestation/1.1.0.json",
   "title": "Certification",
-  "description": "A flat schema for certifying that a subject has met the requirements of a defined certification program. Anchors immutable program data and supports optional subject and assessor metadata.",
+  "description": "Certification bodies use this attestation when a subject passes certification.",
   "type": "object",
   "keywords": ["certification", "compliance", "attestation", "program", "assessment", "reputation"],
   "required": [
@@ -33,91 +33,147 @@
     "subject": {
       "type": "string",
       "title": "Subject ID",
-      "description": "DID of the product, system, or organization being certified."
+      "format": "did",
+      "description": "DID of the product, system, or organization being certified.",
+      "maxLength": 128
+    },
+    "subjectDidHash": {
+      "type": "string",
+      "title": "Subject DID Hash",
+      "description": "Keccak256 hash of the canonicalized subject DID, encoded as 0x-prefixed hex string (32 bytes).",
+      "pattern": "^0x[a-fA-F0-9]{64}$",
+      "x-oma3-skip-reason": "computed"
     },
     "subjectOwner": {
       "type": "string",
       "title": "Subject Owner ID",
-      "description": "DID of the entity responsible for the subject."
+      "format": "did",
+      "description": "DID of the entity responsible for the subject.  If there is no owner, leave blank.",
+      "maxLength": 128
     },
     "subjectMetadataURI": {
       "type": "string",
       "format": "uri",
       "title": "Subject Informational URI",
-      "description": "Optional URI controlled by the subject that provides mutable, human-readable metadata."
+      "description": "Optional URI controlled by the subject that provides mutable, human-readable metadata.",
+      "maxLength": 256
     },
     "programIdentifier": {
       "type": "string",
       "title": "Program ID",
-      "description": "DID or URI of the certification program under which this certification was issued."
+      "maxLength": 128,
+      "format": "did",
+      "description": "DID of the certification program under which this certification was issued. Program release version should be included in the DID."
     },
     "programMetadataURI": {
       "type": "string",
       "format": "uri",
       "title": "Program Informational URI",
-      "description": "Optional URI for mutable, human-readable certification program info."
+      "description": "Optional URI for mutable, human-readable certification program info.",
+      "maxLength": 256
     },
-    "anchoredDataURL": {
+    "payloadVersion": {
+      "type": "string",
+      "title": "Payload Version",
+      "description": "Semver describing the shape of 'payload' (additive changes may bump this without a new schema UID).",
+      "default": "1.0.0",
+      "maxLength": 50,
+      "x-oma3-skip-reason": "unused"
+    },
+    "payloadSpecURI": {
       "type": "string",
       "format": "uri",
-      "title": "Anchored Data URL",
-      "description": "Immutable URI containing the canonical certification program data (e.g., requirements, test plans)."
+      "title": "Payload Specification URI",
+      "description": "URI to the JSON schema specification for this attestation type.",
+      "default": "https://reputation.omatrust.org/schemas/certification/payload/1.0.0.json",
+      "maxLength": 256,
+      "x-oma3-skip-reason": "unused"
     },
-    "anchoredDataAlgorithm": {
-      "type": "string",
-      "title": "Anchored Data Hash Algorithm",
-      "description": "Hashing algorithm used to generate anchoredDataHash (e.g., 'sha3-256')."
+    "payloadSpecDigest": {
+      "type": "object",
+      "title": "Payload Specification Digest",
+      "description": "Integrity digest for payloadSpecURI.",
+      "x-oma3-skip-reason": "unused",
+      "properties": {
+        "algo": {
+          "type": "string",
+          "title": "Payload Spec Hash Algorithm",
+          "enum": [
+            "keccak256",
+            "sha256"
+          ],
+          "default": "keccak256",
+          "description": "Hash algorithm used for payload specification digest."
+        },
+        "hex": {
+          "type": "string",
+          "title": "Payload Spec Hash Value",
+          "pattern": "^0x[a-fA-F0-9]+$",
+          "default": "",
+          "maxLength": 200,
+          "description": "0x-prefixed hex digest of the payload specification."
+        }
+      },
+      "additionalProperties": false
     },
-    "anchoredDataHash": {
-      "type": "string",
-      "title": "Anchored Data Hash",
-      "description": "Cryptographic hash of the content located at anchoredDataURL."
+    "payload": {
+      "type": "object",
+      "title": "Certification Payload",
+      "description": "Extended certification details. Evolvable without changing the envelope. When stored on-chain via EAS, this object is JSON-stringified.",
+      "x-oma3-skip-reason": "unused",
+      "additionalProperties": true
     },
     "assessor": {
       "type": "string",
-      "title": "Assessor ID",
-      "description": "DID of the authorized assessor (test lab, auditor) who evaluated the subject."
+      "title": "Assessor DID",
+      "format": "did",
+      "description": "DID of the authorized assessor (test lab, auditor) who evaluated the subject.",
+      "maxLength": 128
     },
     "assessorMetadataURI": {
       "type": "string",
       "format": "uri",
       "title": "Assessor Informational URI",
-      "description": "Optional URI with human-readable info about the assessor (e.g., homepage, credentials)."
+      "description": "Optional URI with human-readable info about the assessor (e.g., homepage, credentials).",
+      "maxLength": 256
     },
     "certificationLevel": {
       "type": "string",
       "title": "Certification Level",
-      "description": "Optional classification level of certification (e.g., 'Gold', 'Level 2')."
+      "description": "Optional classification level of certification (e.g., 'Gold', 'Level 2').",
+      "maxLength": 256
     },
     "version": {
       "type": "string",
       "title": "Software Version",
-      "description": "Software version of the certified subject."
+      "description": "Software version of the certified subject.",
+      "maxLength": 50
     },
     "versionHW": {
       "type": "string",
       "title": "Hardware Version",
-      "description": "Hardware version of the certified subject, if applicable."
+      "description": "Hardware version of the certified subject, if applicable.",
+      "maxLength": 50
     },
     "effectiveAt": {
       "type": "integer",
       "title": "Effective Date",
-      "description": "Unix timestamp (in seconds) when the certification becomes effective."
+      "description": "Unix timestamp (in seconds) when the certification becomes effective.",
+      "x-oma3-subtype": "timestamp",
+      "x-oma3-default": "current-timestamp"
     },
     "expiresAt": {
       "type": "integer",
       "title": "Expiration Date",
-      "description": "Optional expiration timestamp (in seconds)."
+      "description": "Optional expiration timestamp (in seconds).",
+      "x-oma3-subtype": "timestamp"      
     },
     "issuedAt": {
       "type": "integer",
       "title": "Issued Date",
-      "description": "Optional timestamp (in seconds) when the certification was issued."
-    },
-    "attestationType": {
-      "type": "string",
-      "title": "Attestation Type",
-      "description": "Optional label (e.g., 'Certification') to help downstream tools interpret this attestation."
+      "description": "Optional timestamp (in seconds) when the certification was issued.",
+      "x-oma3-subtype": "timestamp",
+      "x-oma3-default": "current-timestamp"
     }
   },
   "additionalProperties": false

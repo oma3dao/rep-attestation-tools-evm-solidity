@@ -1,6 +1,6 @@
 {
   "name": "Endorsement",
-  "schema": "string subject, string payloadVersion, string payloadSpecURI, string payload, string policyURI, uint256 issuedAt, uint256 effectiveAt, uint256 expiresAt, string attestationType",
+  "schema": "string subject, string policyURI, uint256 issuedAt, uint256 effectiveAt, uint256 expiresAt",
   "revocable": false,
   "resolver": "0x0000000000000000000000000000000000000000"
 }

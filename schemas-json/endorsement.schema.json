@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://oma3.org/schemas/endorsement-v1.1.0.json",
+  "$id": "https://reputation.omatrust.org/schemas/endorsement/attestation/1.1.0.json",
   "title": "Endorsement",
   "description": "A lightweight attestation indicating support, trust, or approval for a DID-identified subject. The 'attestationType' field may be used to distinguish informal endorsements from formal approvals.",
   "type": "object",
@@ -38,7 +38,8 @@
     "subject": {
       "type": "string",
       "title": "Subject ID",
-      "description": "DID of the entity being endorsed or approved."
+      "description": "DID of the entity being endorsed or approved.",
+      "maxLength": 128
     },
     "subjectDidHash": {
       "type": "string",
@@ -51,49 +52,82 @@
       "type": "string",
       "title": "Payload Version",
       "description": "Semver describing the shape of 'payload' (additive changes may bump this without a new schema UID).",
-      "default": "1.0.0"
+      "default": "1.0.0",
+      "maxLength": 50,
+      "x-oma3-skip-reason": "unused"
     },
     "payloadSpecURI": {
       "type": "string",
       "format": "uri",
       "title": "Payload Specification URI",
-      "description": "URI to the human/machine-readable spec for the current payloadVersion (e.g., IPFS/HTTPS)."
+      "description": "URI to the JSON schema specification for this attestation type.",
+      "default": "https://reputation.omatrust.org/schemas/endorsement/payload/1.0.0.json",
+      "maxLength": 256,
+      "x-oma3-skip-reason": "unused"
+    },
+    "payloadSpecDigest": {
+      "type": "object",
+      "title": "Payload Specification Digest",
+      "description": "Integrity digest for payloadSpecURI.",
+      "x-oma3-skip-reason": "unused",
+      "properties": {
+        "algo": {
+          "type": "string",
+          "title": "Payload Spec Hash Algorithm",
+          "enum": [
+            "keccak256",
+            "sha256"
+          ],
+          "default": "keccak256",
+          "description": "Hash algorithm used for payload specification digest."
+        },
+        "hex": {
+          "type": "string",
+          "title": "Payload Spec Hash Value",
+          "pattern": "^0x[a-fA-F0-9]+$",
+          "default": "",
+          "maxLength": 200,
+          "description": "0x-prefixed hex digest of the payload specification."
+        }
+      },
+      "additionalProperties": false
     },
     "payload": {
       "type": "object",
       "title": "Endorsement Payload",
-      "description": "Endorsement details (schema-agnostic; no predefined keys).",
+      "description": "Endorsement details. Evolvable without changing the envelope. When stored on-chain via EAS, this object is JSON-stringified.",
+      "x-oma3-skip-reason": "unused",
       "additionalProperties": true
     },
     "policyURI": {
       "type": "string",
       "format": "uri",
       "title": "Policy URI",
-      "description": "Optional URI pointing to the criteria or process used for formal approvals."
+      "description": "Optional URI pointing to the criteria or process used for formal approvals.",
+      "maxLength": 256
     },
     "issuedAt": {
       "type": "integer",
       "minimum": 0,
       "title": "Issued Date",
-      "description": "Unix timestamp (in seconds) when the attestation was issued."
+      "description": "Unix timestamp (in seconds) when the attestation was issued. Default is the current time.",
+      "x-oma3-subtype": "timestamp",
+      "x-oma3-default": "current-timestamp"
     },
     "effectiveAt": {
       "type": "integer",
       "minimum": 0,
       "title": "Effective Date",
-      "description": "Optional Unix timestamp when the endorsement or approval becomes effective."
+      "description": "Optional Unix timestamp (in seconds) when the assessment becomes effective. Default is the current time.",
+      "x-oma3-subtype": "timestamp",
+      "x-oma3-default": "current-timestamp"
     },
     "expiresAt": {
       "type": "integer",
       "minimum": 0,
       "title": "Expiration Date",
-      "description": "Optional Unix timestamp after which the endorsement or approval expires."
-    },
-    "attestationType": {
-      "type": "string",
-      "title": "Attestation Type",
-      "description": "Type identifier for this attestation (e.g., 'SecurityAssessment').",
-      "default": "SecurityAssessment"
+      "description": "Unix timestamp (in seconds) after which the assessment expires. Leave empty if the assessment does not expire.",
+      "x-oma3-subtype": "timestamp"
     }
   },
   "additionalProperties": false

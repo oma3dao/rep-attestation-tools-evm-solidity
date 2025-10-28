@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://oma3.org/schemas/user-review-response-v1.0.0.json",
+  "$id": "https://reputation.omatrust.org/schemas/user-review-response/attestation/1.0.0.json",
   "title": "User Review Response",
   "description": "A response from an app owner or representative to a UserReview attestation. Uses refUID to reference the original review.",
   "type": "object",
@@ -32,7 +32,8 @@
     "subject": {
       "type": "string",
       "title": "Subject ID",
-      "description": "Address of the original reviewer being responded to."
+      "description": "Address of the original reviewer being responded to.",
+      "maxLength": 128
     },
     "subjectDidHash": {
       "type": "string",
@@ -44,34 +45,40 @@
     "responseBody": {
       "type": "string",
       "title": "Response",
-      "description": "Free-form text containing the response to the review."
+      "description": "Free-form text containing the response to the review.",
+      "maxLength": 500
     },
     "datePublished": {
       "type": "string",
       "format": "date-time",
       "title": "Date Published",
-      "description": "Timestamp when the response was written or published, in ISO 8601 format."
+      "description": "Timestamp when the response was written or published, in ISO 8601 format.",
+      "maxLength": 50
     },
     "anchoredDataURL": {
       "type": "string",
       "format": "uri",
       "title": "Anchored Data URL",
-      "description": "URI pointing to offchain response content (e.g., IPFS, Cloudinary, Arweave)."
+      "description": "URI pointing to offchain response content (e.g., IPFS, Cloudinary, Arweave).",
+      "maxLength": 256
     },
     "anchoredDataAlgorithm": {
       "type": "string",
       "title": "Anchored Data Hash Algorithm",
-      "description": "Hashing algorithm used for 'anchoredDataHash' (e.g., 'sha3-256')."
+      "description": "Hashing algorithm used for 'anchoredDataHash' (e.g., 'sha3-256').",
+      "maxLength": 50
     },
     "anchoredDataHash": {
       "type": "string",
       "title": "Anchored Data Hash",
-      "description": "Cryptographic hash of the content located at 'anchoredDataURL'."
+      "description": "Cryptographic hash of the content located at 'anchoredDataURL'.",
+      "maxLength": 200
     },
     "attestationType": {
       "type": "string",
       "title": "Attestation Type",
-      "description": "Type identifier for this attestation (e.g., 'UserReviewResponse')."
+      "description": "Type identifier for this attestation (e.g., 'UserReviewResponse').",
+      "maxLength": 100
     },
     "issuedAt": {
       "type": "integer",

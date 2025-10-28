@@ -1,6 +1,6 @@
 {
   "name": "Security-Assessment",
-  "schema": "string subject, string payloadVersion, string payloadSpecURI, string payloadSpecDigest, string payload, uint256 issuedAt, uint256 effectiveAt, uint256 expiresAt, string attestationType",
+  "schema": "string subject, string payload, uint256 issuedAt, uint256 effectiveAt, uint256 expiresAt",
   "revocable": false,
   "resolver": "0x0000000000000000000000000000000000000000"
 }
