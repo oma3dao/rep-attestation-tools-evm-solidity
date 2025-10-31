@@ -240,6 +240,116 @@ npx hardhat deploy-eas-schema --file generated/Endorsement.eas.json --network om
 
 The output file contains the schema UID, block number, and network information, which can be used for creating and searching for attestations with this schema.
 
+### After Deploying Schemas
+
+Once you've deployed a schema, you **MUST** update the frontend with the new schema UID and block number:
+
+#### Step 1: Verify Deployment Files Were Modified
+
+Check that deployment files were updated in the `generated/` directory:
+```bash
+git status generated/
+# Should show modified files like:
+#   modified:   generated/Endorsement.deployed.eastest.json
+#   modified:   generated/Certification.deployed.eastest.json
+```
+
+View the changes to see the new UID and block number:
+```bash
+git diff generated/Endorsement.deployed.eastest.json
+# Should show changes like:
+# -  "uid": "0xOLD_UID...",
+# +  "uid": "0xNEW_UID...",
+# -  "blockNumber": 123,
+# +  "blockNumber": 153,
+```
+
+#### Step 2: Update Frontend Schemas
+
+Run the schema update script in the rep-attestation-frontend repository to automatically sync the UIDs and block numbers to the frontend:
+
+```bash
+cd ../rep-attestation-frontend
+npm run update-schemas ../rep-attestation-tools-evm-solidity
+```
+
+This script will:
+1. Read all JSON schemas from `schemas-json/`
+2. Read deployment info from `generated/*.deployed.eastest.json` files
+3. Update `src/config/schemas.ts` with the correct UIDs and block numbers
+
+#### Step 3: Verify Frontend Update
+
+Check that the frontend schemas file was modified:
+
+```bash
+git status src/config/schemas.ts
+# Should show:
+#   modified:   src/config/schemas.ts
+```
+
+View the changes to confirm the new UIDs and block numbers:
+```bash
+git diff src/config/schemas.ts
+# Should show changes like:
+# -    66238: '0xOLD_UID...'  // OmaChain Testnet
+# +    66238: '0xNEW_UID...'  // OmaChain Testnet
+# -    66238: 123  // OmaChain Testnet
+# +    66238: 153  // OmaChain Testnet
+```
+
+The modified entries should look like this:
+```typescript
+deployedUIDs: {
+  97: '0xda787e2c5b89cd1b2c77d7a9565573cc89bac752e9b587f3348e85c62d606a68', // BSC Testnet
+  56: '0x0000000000000000000000000000000000000000000000000000000000000000', // BSC Mainnet
+  66238: '0xaa85b8d1e4d75ade301ba75d599a63612c9aa8374f94b5c09d434ddb654638b2'  // OmaChain Testnet
+},
+deployedBlocks: {
+  97: 52288891, // BSC Testnet
+  56: 0, // BSC Mainnet
+  66238: 153  // OmaChain Testnet
+}
+```
+
+**Important:** The schema UIDs and block numbers are stored per chain ID:
+- `66238` = OMAchain Testnet
+- `6623` = OMAchain Mainnet
+- `97` = BSC Testnet
+- `56` = BSC Mainnet
+
+#### Complete Deployment Workflow Example
+
+```bash
+# 1. Generate EAS object from JSON schema
+npx hardhat generate-eas-object \
+  --schema schemas-json/endorsement.schema.json \
+  --network omachainTestnet
+
+# 2. Deploy the schema
+npx hardhat deploy-eas-schema \
+  --file generated/Endorsement.eastest.json \
+  --network omachainTestnet
+
+# Output shows:
+# SCHEMA UID: 0xaa85b8d1e4d75ade301ba75d599a63612c9aa8374f94b5c09d434ddb654638b2
+# BLOCK NUMBER: 153
+
+# 3. Verify deployment (optional)
+npx hardhat verify-eas-schema \
+  --uid 0xaa85b8d1e4d75ade301ba75d599a63612c9aa8374f94b5c09d434ddb654638b2 \
+  --network omachainTestnet
+
+# 4. Update frontend schemas (REQUIRED)
+cd ../rep-attestation-frontend
+npm run update-schemas ../rep-attestation-tools-evm-solidity
+
+# 5. Verify the update with git diff
+cd ../rep-attestation-frontend
+git diff src/config/schemas.ts
+# Look for changes to the 66238 (OMAchain Testnet) entries
+```
+
 ### Deployment Results
 
 The deployment process produces a JSON file containing important information:
