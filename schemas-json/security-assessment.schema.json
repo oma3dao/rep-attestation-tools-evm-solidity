@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://reputation.omatrust.org/schemas/security-assessment/attestation/1.1.0.json",
+  "$id": "https://reputation.omatrust.org/schemas/security-assessment/attestation/1.2.0.json",
   "title": "Security Assessment",
   "description": "Use this form to record a security assessment onchain",
   "type": "object",
@@ -53,6 +53,14 @@
       "pattern": "^0x[a-fA-F0-9]{64}$",
       "x-oma3-skip-reason": "computed"
     },
+    "version": {
+      "type": "string",
+      "title": "Software Version",
+      "pattern": "^\\d+\\.\\d+\\.\\d+$",
+      "description": "Semantic version of the software/code that was assessed (e.g., '1.2.3').",
+      "maxLength": 50,
+      "x-oma3-subtype": "semver"
+    },
     "payloadVersion": {
       "type": "string",
       "title": "Payload Version",
@@ -66,7 +74,7 @@
       "format": "uri",
       "title": "Payload Specification URI",
       "description": "URI to the JSON schema specification for this attestation type.",
-      "default": "https://reputation.omatrust.org/schemas/security-assessment/payload/1.0.0.json",
+      "default": "https://reputation.omatrust.org/schemas/security-assessment/payload/1.2.0.json",
       "maxLength": 256,
       "x-oma3-skip-reason": "default"
     },

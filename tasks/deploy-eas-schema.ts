@@ -72,40 +72,18 @@ task("deploy-eas-schema", "Deploy an EAS schema from a .eas.json file")
     );
     console.log(`Estimated Schema UID: ${formatSchemaUID(expectedSchemaUID)}`);
     
-    // Check if schema already exists
-    const schemaExists = await verifySchemaExists(schemaRegistry, expectedSchemaUID);
-    if (schemaExists) {
-      console.log(`Schema already exists on ${hre.network.name}!`);
-      
-      // Get schema details to retrieve block number if possible
-      const schemaDetails = await getSchemaDetails(schemaRegistry, expectedSchemaUID);
-      const blockNumber = schemaDetails?.registrationBlockNumber || 'unknown';
-      
-      // Create a visually distinct output for the UID
-      console.log("\n==================================================");
-      console.log(`SCHEMA UID: ${formatSchemaUID(expectedSchemaUID)}`);
-      console.log(`BLOCK NUMBER: ${blockNumber}`);
-      console.log("==================================================\n");
-      
-      // Write schema details to a JSON file for easy reference
-      const detailsFilePath = path.join(path.dirname(filePath), `${easSchema.name}.deployed.${networkSuffix}.json`);
-      const outputData = {
-        uid: formatSchemaUID(expectedSchemaUID),
-        blockNumber: blockNumber,
-        network: hre.network.name
-      };
-      fs.writeFileSync(detailsFilePath, JSON.stringify(outputData, null, 2));
-      
-      // Show relative path instead of full path
-      const relativePath = path.relative(process.cwd(), detailsFilePath);
-      console.log(`Schema details have been saved to: ${relativePath}`);
-      
-      return formatSchemaUID(expectedSchemaUID);
-    }
-
-    // If schema doesn't exist, deploy it
-    console.log(`Deploying schema "${easSchema.name}" to ${hre.network.name} (${schemaRegistryAddress})...`);
     try {
+      // Check if schema already exists before attempting deployment
+      const schemaExists = await verifySchemaExists(schemaRegistry, expectedSchemaUID);
+      if (schemaExists) {
+        console.log(`\nSchema already exists on ${hre.network.name}!`);
+        console.log(`Schema UID: ${formatSchemaUID(expectedSchemaUID)}`);
+        console.log(`No changes made to deployment file.`);
+        return formatSchemaUID(expectedSchemaUID);
+      }
+      
+      // If schema doesn't exist, deploy it
+      console.log(`Deploying schema "${easSchema.name}" to ${hre.network.name} (${schemaRegistryAddress})...`);
       const tx = await schemaRegistry.register({
         schema: easSchema.schema,
         resolverAddress: resolverAddress,

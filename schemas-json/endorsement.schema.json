@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://reputation.omatrust.org/schemas/endorsement/attestation/1.1.0.json",
+  "$id": "https://reputation.omatrust.org/schemas/endorsement/attestation/1.2.0.json",
   "title": "Endorsement",
   "description": "A lightweight attestation indicating support, trust, or approval for a DID-identified subject. The 'attestationType' field may be used to distinguish informal endorsements from formal approvals.",
   "type": "object",
@@ -48,6 +48,14 @@
       "pattern": "^0x[a-fA-F0-9]{64}$",
       "x-oma3-skip-reason": "computed"
     },
+    "version": {
+      "type": "string",
+      "title": "Software Version",
+      "pattern": "^\\d+\\.\\d+\\.\\d+$",
+      "description": "Semantic version of the endorsed subject (e.g., '1.2.3'). Optional - leave empty if endorsing the subject generally rather than a specific version.",
+      "maxLength": 50,
+      "x-oma3-subtype": "semver"
+    },
     "payloadVersion": {
       "type": "string",
       "title": "Payload Version",
@@ -61,7 +69,7 @@
       "format": "uri",
       "title": "Payload Specification URI",
       "description": "URI to the JSON schema specification for this attestation type.",
-      "default": "https://reputation.omatrust.org/schemas/endorsement/payload/1.0.0.json",
+      "default": "https://reputation.omatrust.org/schemas/endorsement/payload/1.2.0.json",
       "maxLength": 256,
       "x-oma3-skip-reason": "unused"
     },
