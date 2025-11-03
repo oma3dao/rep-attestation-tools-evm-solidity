@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://reputation.omatrust.org/schemas/certification/attestation/1.1.0.json",
+  "$id": "https://reputation.omatrust.org/schemas/certification/attestation/1.2.0.json",
   "title": "Certification",
   "description": "Certification bodies use this attestation when a subject passes certification.",
   "type": "object",
@@ -43,6 +43,13 @@
       "description": "Keccak256 hash of the canonicalized subject DID, encoded as 0x-prefixed hex string (32 bytes).",
       "pattern": "^0x[a-fA-F0-9]{64}$",
       "x-oma3-skip-reason": "computed"
+    },
+    "organization": {
+      "type": "string",
+      "title": "Organization",
+      "format": "did",
+      "description": "DID of the parent organization. Use this when certifying a service or resource that belongs to an organization (e.g., certifying did:web:example.com:service:api, set organization to did:web:example.com). Leave empty when certifying an organization directly.",
+      "maxLength": 128
     },
     "subjectOwner": {
       "type": "string",

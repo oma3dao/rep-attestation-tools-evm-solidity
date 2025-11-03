@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://reputation.omatrust.org/schemas/security-assessment/attestation/1.2.0.json",
+  "$id": "https://reputation.omatrust.org/schemas/security-assessment/attestation/1.3.0.json",
   "title": "Security Assessment",
   "description": "Use this form to record a security assessment onchain",
   "type": "object",
@@ -52,6 +52,13 @@
       "description": "Keccak256 hash of the canonicalized subject DID, encoded as 0x-prefixed hex string (32 bytes).",
       "pattern": "^0x[a-fA-F0-9]{64}$",
       "x-oma3-skip-reason": "computed"
+    },
+    "organization": {
+      "type": "string",
+      "title": "Organization",
+      "format": "did",
+      "description": "DID of the parent organization. Use this when assessing a service or resource that belongs to an organization (e.g., assessing did:web:example.com:service:api, set organization to did:web:example.com). Leave empty when assessing an organization directly.",
+      "maxLength": 128
     },
     "version": {
       "type": "string",
