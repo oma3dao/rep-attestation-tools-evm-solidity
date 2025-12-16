@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://reputation.omatrust.org/schemas/certification/attestation/1.2.0.json",
+  "$id": "https://reputation.omatrust.org/schemas/certification/attestation/1.3.0.json",
   "title": "Certification",
   "description": "Certification bodies use this attestation when a subject passes certification.",
   "type": "object",
@@ -8,147 +8,52 @@
   "required": [
     "attester",
     "subject",
-    "programIdentifier",
-    "assessor"
+    "programID",
+    "assessor",
+    "issuedAt"
   ],
   "properties": {
     "@context": {
       "type": "string",
-      "description": "Optional JSON-LD context URI.",
+      "description": "Optional JSON-LD context URI for semantic processing.",
       "default": "https://oma3.org/context.jsonld",
+      "maxLength": 256,
       "x-oma3-skip-reason": "metadata"
     },
     "@type": {
       "type": "string",
       "description": "Semantic type identifier, typically 'Certification'.",
       "default": "Certification",
+      "maxLength": 100,
       "x-oma3-skip-reason": "metadata"
     },
     "attester": {
       "type": "string",
       "title": "Certification Body ID",
+      "format": "did",
+      "pattern": "^did:[a-z0-9]+:.+$",
       "description": "DID of the Certification Body issuing the certification.",
+      "maxLength": 256,
+      "x-oma3-did-methods": ["web", "pkh", "key"],
       "x-oma3-skip-reason": "eas"
     },
     "subject": {
       "type": "string",
       "title": "Subject ID",
       "format": "did",
+      "pattern": "^did:[a-z0-9]+:.+$",
       "description": "DID of the product, system, or organization being certified.",
-      "maxLength": 128
-    },
-    "subjectDidHash": {
-      "type": "string",
-      "title": "Subject DID Hash",
-      "description": "Keccak256 hash of the canonicalized subject DID, encoded as 0x-prefixed hex string (32 bytes).",
-      "pattern": "^0x[a-fA-F0-9]{64}$",
-      "x-oma3-skip-reason": "computed"
+      "maxLength": 256,
+      "x-oma3-did-methods": ["web", "pkh", "key"]
     },
     "organization": {
       "type": "string",
       "title": "Organization",
       "format": "did",
-      "description": "DID of the parent organization. Use this when certifying a service or resource that belongs to an organization (e.g., certifying did:web:example.com:service:api, set organization to did:web:example.com). Leave empty when certifying an organization directly.",
-      "maxLength": 128
-    },
-    "subjectOwner": {
-      "type": "string",
-      "title": "Subject Owner ID",
-      "format": "did",
-      "description": "DID of the entity responsible for the subject.  If there is no owner, leave blank.",
-      "maxLength": 128
-    },
-    "subjectMetadataURI": {
-      "type": "string",
-      "format": "uri",
-      "title": "Subject Informational URI",
-      "description": "Optional URI controlled by the subject that provides mutable, human-readable metadata.",
-      "maxLength": 256
-    },
-    "programIdentifier": {
-      "type": "string",
-      "title": "Program ID",
-      "maxLength": 128,
-      "format": "did",
-      "description": "DID of the certification program under which this certification was issued. Program release version should be included in the DID."
-    },
-    "programMetadataURI": {
-      "type": "string",
-      "format": "uri",
-      "title": "Program Informational URI",
-      "description": "Optional URI for mutable, human-readable certification program info.",
-      "maxLength": 256
-    },
-    "payloadVersion": {
-      "type": "string",
-      "title": "Payload Version",
-      "description": "Semver describing the shape of 'payload' (additive changes may bump this without a new schema UID).",
-      "default": "1.0.0",
-      "maxLength": 50,
-      "x-oma3-skip-reason": "unused"
-    },
-    "payloadSpecURI": {
-      "type": "string",
-      "format": "uri",
-      "title": "Payload Specification URI",
-      "description": "URI to the JSON schema specification for this attestation type.",
-      "default": "https://reputation.omatrust.org/schemas/certification/payload/1.0.0.json",
+      "pattern": "^did:[a-z0-9]+:.+$",
+      "description": "DID of the parent organization that owns or governs the certified subject. For example, when certifying did:web:example.com:service:api, set organization to did:web:example.com. Leave empty when certifying an organization itself.",
       "maxLength": 256,
-      "x-oma3-skip-reason": "unused"
-    },
-    "payloadSpecDigest": {
-      "type": "object",
-      "title": "Payload Specification Digest",
-      "description": "Integrity digest for payloadSpecURI.",
-      "x-oma3-skip-reason": "unused",
-      "properties": {
-        "algo": {
-          "type": "string",
-          "title": "Payload Spec Hash Algorithm",
-          "enum": [
-            "keccak256",
-            "sha256"
-          ],
-          "default": "keccak256",
-          "description": "Hash algorithm used for payload specification digest."
-        },
-        "hex": {
-          "type": "string",
-          "title": "Payload Spec Hash Value",
-          "pattern": "^0x[a-fA-F0-9]+$",
-          "default": "",
-          "maxLength": 200,
-          "description": "0x-prefixed hex digest of the payload specification."
-        }
-      },
-      "additionalProperties": false
-    },
-    "payload": {
-      "type": "object",
-      "title": "Certification Payload",
-      "description": "Extended certification details. Evolvable without changing the envelope. When stored on-chain via EAS, this object is JSON-stringified.",
-      "x-oma3-skip-reason": "unused",
-      "additionalProperties": true
-    },
-    "assessor": {
-      "type": "string",
-      "title": "Assessor DID",
-      "format": "did",
-      "description": "DID of the authorized assessor (test lab, auditor) who evaluated the subject.",
-      "maxLength": 128
-    },
-    "assessorMetadataURI": {
-      "type": "string",
-      "format": "uri",
-      "title": "Assessor Informational URI",
-      "description": "Optional URI with human-readable info about the assessor (e.g., homepage, credentials).",
-      "maxLength": 256
-    },
-    "certificationLevel": {
-      "type": "string",
-      "title": "Certification Level",
-      "description": "Optional classification level of certification (e.g., 'Gold', 'Level 2').",
-      "maxLength": 256
+      "x-oma3-did-methods": ["web", "pkh"]
     },
     "version": {
       "type": "string",
@@ -162,6 +67,90 @@
       "description": "Hardware version of the certified subject, if applicable.",
       "maxLength": 50
     },
+    "subjectURI": {
+      "type": "string",
+      "format": "uri",
+      "title": "Subject Informational URI",
+      "description": "Optional URI controlled by the subject that provides mutable, human-readable metadata.",
+      "maxLength": 256
+    },
+    "programID": {
+      "type": "string",
+      "title": "Program ID",
+      "format": "did",
+      "pattern": "^did:[a-z0-9]+:.+$",
+      "description": "DID of the certification program under which this certification was issued. Program release version should be included in the DID.",
+      "maxLength": 256,
+      "x-oma3-did-methods": ["web"]
+    },
+    "programURI": {
+      "type": "string",
+      "format": "uri",
+      "title": "Program Informational URI",
+      "description": "Optional URI for mutable, human-readable certification program info.",
+      "maxLength": 256
+    },
+    "assessor": {
+      "type": "string",
+      "title": "Assessor DID",
+      "format": "did",
+      "pattern": "^did:[a-z0-9]+:.+$",
+      "description": "DID of the authorized assessor (test lab, auditor) who evaluated the subject.",
+      "maxLength": 256,
+      "x-oma3-did-methods": ["web", "pkh"]
+    },
+    "assessorURI": {
+      "type": "string",
+      "format": "uri",
+      "title": "Assessor Informational URI",
+      "description": "Optional URI with human-readable info about the assessor (e.g., homepage, credentials).",
+      "maxLength": 256
+    },
+    "certificationLevel": {
+      "type": "string",
+      "title": "Certification Level",
+      "description": "Optional classification level of certification (e.g., 'Gold', 'Level 2').",
+      "maxLength": 256
+    },
+    "outcome": {
+      "$ref": "common.schema.json#/$defs/Outcome"
+    },
+    "reportURI": {
+      "type": "string",
+      "format": "uri",
+      "title": "Report URI",
+      "description": "Optional URI to the certification report or assessment documentation.",
+      "maxLength": 256
+    },
+    "reportDigest": {
+      "$ref": "common.schema.json#/$defs/ReportDigest"
+    },
+    "payload": {
+      "type": "object",
+      "title": "Certification Payload",
+      "description": "Extended certification details. Evolvable without changing the envelope. When stored on-chain via EAS, this object is JSON-stringified.",
+      "x-oma3-skip-reason": "unused",
+      "additionalProperties": true
+    },
+    "payloadVersion": {
+      "$ref": "common.schema.json#/$defs/PayloadVersion",
+      "x-oma3-skip-reason": "unused"
+    },
+    "payloadSpecURI": {
+      "$ref": "common.schema.json#/$defs/PayloadSpecURI",
+      "x-oma3-skip-reason": "unused"
+    },
+    "payloadSpecDigest": {
+      "$ref": "common.schema.json#/$defs/PayloadSpecDigest",
+      "x-oma3-skip-reason": "unused"
+    },
+    "issuedAt": {
+      "type": "integer",
+      "title": "Issued Date",
+      "description": "Unix timestamp (in seconds) when the certification was issued by the certification body.",
+      "x-oma3-subtype": "timestamp",
+      "x-oma3-default": "current-timestamp"
+    },
     "effectiveAt": {
       "type": "integer",
       "title": "Effective Date",
@@ -173,14 +162,7 @@
       "type": "integer",
       "title": "Expiration Date",
       "description": "Optional expiration timestamp (in seconds).",
-      "x-oma3-subtype": "timestamp"      
-    },
-    "issuedAt": {
-      "type": "integer",
-      "title": "Issued Date",
-      "description": "Optional timestamp (in seconds) when the certification was issued.",
-      "x-oma3-subtype": "timestamp",
-      "x-oma3-default": "current-timestamp"
+      "x-oma3-subtype": "timestamp"
     }
   },
   "additionalProperties": false

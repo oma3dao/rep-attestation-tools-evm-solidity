@@ -1,0 +1,289 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://reputation.omatrust.org/schemas/common.schema.json",
+  "title": "OMA3 Common Definitions",
+  "description": "Shared data types and proof structures for OMATrust schemas.",
+  "$defs": {
+    "Proof": {
+      "type": "object",
+      "description": "Cryptographic proof submitted to the Relayer to prove the validity of the attestation. Uses a uniform envelope pattern: proofType identifies the proof format, proofObject contains the proof content. The proofPurpose at wrapper level provides quick access, but MUST match the proofPurpose within signed content.",
+      "required": ["proofType", "proofPurpose", "proofObject"],
+      "properties": {
+        "proofType": {
+          "type": "string",
+          "description": "Identifies the proof format and verification method.",
+          "enum": ["pop-eip712", "pop-jws", "tx-encoded-value", "x402-receipt", "tx-interaction", "evidence-pointer"]
+        },
+        "proofPurpose": {
+          "type": "string",
+          "enum": ["shared-control", "commercial-tx"],
+          "description": "Purpose of the proof. Use 'shared-control' for Binding/Linking, 'commercial-tx' for Reviews. MUST match proofPurpose in signed content."
+        },
+        "proofObject": {
+          "description": "Proof content. Can be a string (JWS) or object (structured proof data). Structure depends on proofType."
+        }
+      },
+      "oneOf": [
+        {
+          "title": "Proof of Possession (EIP-712)",
+          "properties": {
+            "proofType": { "const": "pop-eip712" },
+            "proofPurpose": {
+              "type": "string",
+              "enum": ["shared-control", "commercial-tx"]
+            },
+            "proofObject": {
+              "type": "object",
+              "required": ["signature", "domain", "message"],
+              "properties": {
+                "signature": { 
+                  "type": "string", 
+                  "pattern": "^0x[a-fA-F0-9]+$",
+                  "description": "EIP-712 signature proving control of the Ethereum address."
+                },
+                "domain": {
+                  "type": "object",
+                  "description": "EIP-712 domain separator.",
+                  "required": ["name", "version", "chainId"],
+                  "properties": {
+                    "name": { "type": "string", "const": "OMATrustProof", "description": "Domain name, always 'OMATrustProof'." },
+                    "version": { "type": "string", "const": "1", "description": "Domain version, always '1'." },
+                    "chainId": { "type": "integer", "description": "EIP-155 chain ID of the signer's chain." }
+                  }
+                },
+                "message": { 
+                  "type": "object",
+                  "description": "The EIP-712 typed data message that was signed. Field names are human-readable for wallet display.",
+                  "required": ["signer", "authorizedEntity", "signingPurpose", "statement"],
+                  "properties": {
+                    "signer": { "type": "string", "description": "Ethereum address of the signer (Subject)." },
+                    "authorizedEntity": { "type": "string", "description": "DID or address being authorized (Controller)." },
+                    "signingPurpose": { 
+                      "type": "string",
+                      "enum": ["shared-control", "commercial-tx"],
+                      "description": "Purpose being authorized. Use 'shared-control' for Binding/Linking, 'commercial-tx' for Reviews."
+                    },
+                    "creationTimestamp": { "type": "integer", "description": "Unix timestamp when the signature was created. Use 0 if unused." },
+                    "expirationTimestamp": { "type": "integer", "description": "Unix timestamp when the signature expires. Use 0 if unused." },
+                    "randomValue": { "type": "string", "pattern": "^0x[a-fA-F0-9]{64}$", "description": "32-byte random value for replay protection. Use 0x00...00 if unused." },
+                    "statement": { "type": "string", "description": "Human-readable safety statement shown by wallets. MUST state this is not a transaction or asset approval." }
+                  }
+                }
+              }
+            }
+          }
+        },
+        {
+          "title": "Proof of Possession (JWS)",
+          "properties": {
+            "proofType": { "const": "pop-jws" },
+            "proofPurpose": {
+              "type": "string",
+              "enum": ["shared-control", "commercial-tx"]
+            },
+            "proofObject": {
+              "type": "string",
+              "description": "RFC 9449 DPoP-style JWS (JSON Web Signature). Claims MUST include: 'oma3_proof_purpose' ('shared-control' or 'commercial-tx'), 'iss' (issuer DID), 'aud' (audience DID), 'iat' (issued at), and 'exp' (expiration)."
+            }
+          }
+        },
+        {
+          "title": "Transaction with Encoded Value",
+          "description": "On-chain transaction where the value encodes the proof purpose. No additional signature required as the transaction itself is cryptographically signed.",
+          "properties": {
+            "proofType": { "const": "tx-encoded-value" },
+            "proofPurpose": {
+              "type": "string",
+              "enum": ["shared-control", "commercial-tx"]
+            },
+            "proofObject": {
+              "type": "object",
+              "required": ["proofPurpose", "txHash", "chainId", "sender"],
+              "properties": {
+                "proofPurpose": {
+                  "type": "string",
+                  "enum": ["shared-control", "commercial-tx"],
+                  "description": "Purpose of the proof. Must match the encoded value in the transaction."
+                },
+                "txHash": { 
+                  "type": "string",
+                  "pattern": "^0x[a-fA-F0-9]{64}$",
+                  "description": "Transaction hash proving on-chain interaction."
+                },
+                "chainId": { 
+                  "type": "string",
+                  "description": "CAIP-2 chain identifier (e.g., 'eip155:1')."
+                },
+                "sender": { 
+                  "type": "string",
+                  "description": "Address that sent the transaction."
+                }
+              }
+            }
+          }
+        },
+        {
+          "title": "x402 Receipt Proof",
+          "description": "Server-signed payment receipt. The JWS payload contains proofPurpose within the signed content.",
+          "properties": {
+            "proofType": { "const": "x402-receipt" },
+            "proofPurpose": {
+              "const": "commercial-tx",
+              "description": "x402 receipts are always for commercial transactions."
+            },
+            "proofObject": {
+              "type": "string",
+              "pattern": "^[A-Za-z0-9_-]+\\.[A-Za-z0-9_-]+\\.[A-Za-z0-9_-]*$",
+              "description": "Compact JWS produced by the x402 service. The JWS payload MUST include 'oma3_proof_purpose' ('commercial-tx'), and embed the offer (Payment Requirements slice) and client payment payload (including txRef) per the x402 spec."
+            }
+          }
+        },
+
+        {
+          "title": "Transaction Interaction Proof",
+          "description": "Reference to an on-chain transaction proving interaction with a service contract. Used to verify actual service usage for reviews and attestations.",
+          "properties": {
+            "proofType": { "const": "tx-interaction" },
+            "proofPurpose": {
+              "type": "string",
+              "enum": ["shared-control", "commercial-tx"],
+              "description": "Purpose of the proof. Typically 'commercial-tx' for service usage."
+            },
+            "proofObject": {
+              "type": "object",
+              "required": ["chainId", "txHash"],
+              "properties": {
+                "chainId": { 
+                  "type": "string",
+                  "pattern": "^[a-z0-9]+:[a-zA-Z0-9._-]+$",
+                  "description": "CAIP-2 chain identifier (namespace:reference), e.g. 'eip155:1', 'eip155:8453', 'cosmos:cosmoshub-4', 'solana:mainnet-beta'."
+                },
+                "txHash": { 
+                  "type": "string", 
+                  "pattern": "^0x[a-fA-F0-9]{64}$",
+                  "description": "Transaction hash proving on-chain interaction with the service. Verifiers should look up the transaction on-chain to validate the interaction."
+                },
+                "contractAddress": {
+                  "type": "string",
+                  "pattern": "^0x[a-fA-F0-9]{40}$",
+                  "description": "Optional contract address that was interacted with. Helps verify the transaction was with the correct service."
+                }
+              }
+            }
+          }
+        },
+        {
+          "title": "Evidence Pointer",
+          "description": "URL pointing to external evidence (e.g., a proof posted on a social platform, a document, or other verifiable content). The proof at the URL contains proofPurpose within its signed content.",
+          "properties": {
+            "proofType": { "const": "evidence-pointer" },
+            "proofPurpose": {
+              "const": "shared-control",
+              "description": "Evidence pointers are typically used for identity linking."
+            },
+            "proofObject": {
+              "type": "object",
+              "required": ["url"],
+              "properties": {
+                "url": {
+                  "type": "string",
+                  "format": "uri",
+                  "description": "Publicly accessible URL containing the full proof (pop-jws or pop-eip712). Verifiers MUST fetch this URL, parse the content to find the embedded proof object, and verify it using the standard pop-jws or pop-eip712 verification process."
+                }
+              }
+            }
+          }
+        }
+      ]
+    },
+    "PayloadVersion": {
+      "type": "string",
+      "title": "Payload Version",
+      "description": "Semver describing the shape of the payload.",
+      "default": "1.0.0",
+      "maxLength": 50
+    },
+    "PayloadSpecURI": {
+      "type": "string",
+      "format": "uri",
+      "title": "Payload Specification URI",
+      "description": "URI to the JSON schema specification for this attestation type.",
+      "maxLength": 256
+    },
+    "PayloadSpecDigest": {
+      "type": "object",
+      "title": "Payload Specification Digest",
+      "description": "Integrity digest for payloadSpecURI. Paste the full JSON object.",
+      "x-oma3-render": "raw",
+      "properties": {
+        "algo": { 
+          "type": "string",
+          "title": "Payload Spec Hash Algorithm",
+          "enum": ["keccak256", "sha256"],
+          "default": "keccak256",
+          "description": "Hash algorithm used for payload specification digest."
+        },
+        "canon": {
+          "type": "string",
+          "title": "Canonicalization Method",
+          "enum": ["raw", "jcs"],
+          "default": "raw",
+          "description": "Canonicalization method: 'raw' for binary/text files, 'jcs' for JSON (RFC 8785)."
+        },
+        "hex": { 
+          "type": "string",
+          "title": "Payload Spec Hash Value",
+          "pattern": "^0x[a-fA-F0-9]+$",
+          "default": "",
+          "description": "0x-prefixed hex digest of the payload specification.",
+          "maxLength": 200
+        }
+      },
+      "additionalProperties": false
+    },
+    "Outcome": {
+      "type": "string",
+      "title": "Outcome",
+      "enum": ["pass", "fail"],
+      "description": "Overall outcome of an assessment or certification. If omitted, outcome MUST be interpreted as 'pass'."
+    },
+    "ReportDigest": {
+      "type": "object",
+      "title": "Report Digest",
+      "description": "Content digest of a report for integrity verification. Paste the full JSON object.",
+      "x-oma3-render": "raw",
+      "properties": {
+        "algo": {
+          "type": "string",
+          "title": "Report Hash Algorithm",
+          "enum": ["keccak256", "sha256"],
+          "default": "keccak256",
+          "description": "Hash algorithm used for report digest computation."
+        },
+        "canon": {
+          "type": "string",
+          "title": "Canonicalization Method",
+          "enum": ["raw", "jcs"],
+          "default": "raw",
+          "description": "Canonicalization method: 'raw' for binary/text files, 'jcs' for JSON (RFC 8785)."
+        },
+        "hex": {
+          "type": "string",
+          "title": "Report Hash Value",
+          "pattern": "^0x[a-fA-F0-9]+$",
+          "description": "0x-prefixed hex digest of the canonical report bytes.",
+          "maxLength": 200
+        }
+      },
+      "additionalProperties": false
+    },
+    "Version": {
+      "type": "string",
+      "title": "Semantic Version",
+      "pattern": "^\\d+\\.\\d+\\.\\d+$",
+      "description": "Semantic version string (e.g., '1.2.3').",
+      "maxLength": 50,
+      "x-oma3-subtype": "semver"
+    }
+  }
+}

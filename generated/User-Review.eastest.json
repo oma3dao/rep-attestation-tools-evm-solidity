@@ -1,6 +1,6 @@
 {
   "name": "User-Review",
-  "schema": "string subject, string organization, string version, string summary, string reviewBody, string author, uint256 ratingValue, string[] screenshotUrls, uint256 issuedAt, uint256 effectiveAt, uint256 expiresAt",
+  "schema": "string subject, string version, uint256 ratingValue, string reviewBody, string[] screenshotUrls, string[] proofs",
   "revocable": false,
   "resolver": "0x0000000000000000000000000000000000000000"
 }

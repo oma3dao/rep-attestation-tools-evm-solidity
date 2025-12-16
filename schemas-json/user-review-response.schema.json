@@ -1,46 +1,56 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://reputation.omatrust.org/schemas/user-review-response/attestation/1.0.0.json",
+  "$id": "https://reputation.omatrust.org/schemas/user-review-response/attestation/1.1.0.json",
   "title": "User Review Response",
   "description": "A response from an app owner or representative to a UserReview attestation. Uses refUID to reference the original review.",
   "type": "object",
   "keywords": ["review", "response", "feedback", "reputation", "attestation"],
   "required": [
     "attester",
-    "subject",
-    "responseBody"
+    "refUID",
+    "responseBody",
+    "issuedAt"
   ],
   "properties": {
     "@context": {
       "type": "string",
       "description": "Optional JSON-LD context URI for semantic processing.",
       "default": "https://oma3.org/context.jsonld",
+      "maxLength": 256,
       "x-oma3-skip-reason": "metadata"
     },
     "@type": {
       "type": "string",
       "description": "Semantic type identifier, typically 'UserReviewResponse'.",
       "default": "UserReviewResponse",
+      "maxLength": 100,
       "x-oma3-skip-reason": "metadata"
     },
     "attester": {
       "type": "string",
       "title": "Attester ID",
-      "description": "Ethereum address of the entity or representative responding to the review.",
+      "format": "did",
+      "pattern": "^did:[a-z0-9]+:.+$",
+      "description": "DID of the entity or representative responding to the review.",
+      "maxLength": 256,
+      "x-oma3-did-methods": ["web", "pkh", "key"],
       "x-oma3-skip-reason": "eas"
     },
     "subject": {
       "type": "string",
-      "title": "Subject ID",
-      "description": "Address of the original reviewer being responded to.",
-      "maxLength": 128
+      "title": "Reviewer ID",
+      "format": "did",
+      "pattern": "^did:[a-z0-9]+:.+$",
+      "description": "DID of the original reviewer being responded to.",
+      "maxLength": 256,
+      "x-oma3-did-methods": ["web", "pkh", "key", "handle"],
+      "x-oma3-handle-platforms": ["twitter", "github", "discord", "telegram", "lens", "farcaster"]
     },
-    "subjectDidHash": {
+    "refUID": {
       "type": "string",
-      "title": "Subject DID Hash",
-      "description": "Keccak256 hash of the canonicalized subject DID, encoded as 0x-prefixed hex string (32 bytes).",
-      "pattern": "^0x[a-fA-F0-9]{64}$",
-      "x-oma3-skip-reason": "computed"
+      "title": "User Review UID",
+      "description": "The UID of the user review being responded to.",
+      "maxLength": 66
     },
     "responseBody": {
       "type": "string",
@@ -48,47 +58,14 @@
       "description": "Free-form text containing the response to the review.",
       "maxLength": 500
     },
-    "datePublished": {
-      "type": "string",
-      "format": "date-time",
-      "title": "Date Published",
-      "description": "Timestamp when the response was written or published, in ISO 8601 format.",
-      "maxLength": 50
-    },
-    "anchoredDataURL": {
-      "type": "string",
-      "format": "uri",
-      "title": "Anchored Data URL",
-      "description": "URI pointing to offchain response content (e.g., IPFS, Cloudinary, Arweave).",
-      "maxLength": 256
-    },
-    "anchoredDataAlgorithm": {
-      "type": "string",
-      "title": "Anchored Data Hash Algorithm",
-      "description": "Hashing algorithm used for 'anchoredDataHash' (e.g., 'sha3-256').",
-      "maxLength": 50
-    },
-    "anchoredDataHash": {
-      "type": "string",
-      "title": "Anchored Data Hash",
-      "description": "Cryptographic hash of the content located at 'anchoredDataURL'.",
-      "maxLength": 200
-    },
-    "attestationType": {
-      "type": "string",
-      "title": "Attestation Type",
-      "description": "Type identifier for this attestation (e.g., 'UserReviewResponse').",
-      "maxLength": 100
-    },
     "issuedAt": {
       "type": "integer",
+      "minimum": 0,
       "title": "Issued Date",
-      "description": "Unix timestamp (in seconds) for when the response was submitted."
-    },
-    "expiresAt": {
-      "type": "integer",
-      "title": "Expiration Date",
-      "description": "Optional expiration timestamp for the attestation."
+      "description": "Unix timestamp (in seconds) when the response was issued. Default is the current time.",
+      "x-oma3-subtype": "timestamp",
+      "x-oma3-default": "current-timestamp",
+      "x-oma3-skip-reason": "eas"
     }
   },
   "additionalProperties": false

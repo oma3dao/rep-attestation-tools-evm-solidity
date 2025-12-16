@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://reputation.omatrust.org/schemas/security-assessment/attestation/1.3.0.json",
+  "$id": "https://reputation.omatrust.org/schemas/security-assessment/attestation/1.4.0.json",
   "title": "Security Assessment",
   "description": "Use this form to record a security assessment onchain",
   "type": "object",
@@ -25,110 +25,72 @@
       "type": "string",
       "description": "Optional JSON-LD context URI for semantic processing.",
       "default": "https://oma3.org/context.jsonld",
+      "maxLength": 256,
       "x-oma3-skip-reason": "metadata"
     },
     "@type": {
       "type": "string",
       "description": "Semantic type identifier, typically 'SecurityAssessment'.",
       "default": "SecurityAssessment",
+      "maxLength": 100,
       "x-oma3-skip-reason": "metadata"
     },
     "attester": {
       "type": "string",
       "title": "Attester ID",
-      "description": "DID or address of the assessment issuer.",
+      "format": "did",
+      "pattern": "^did:[a-z0-9]+:.+$",
+      "description": "DID of the assessment issuer.",
+      "maxLength": 256,
+      "x-oma3-did-methods": ["web", "pkh", "key"],
       "x-oma3-skip-reason": "eas"
     },
     "subject": {
       "type": "string",
       "title": "Subject ID",
       "format": "did",
+      "pattern": "^did:[a-z0-9]+:.+$",
       "description": "ID of the assessed application/contract/service. Select an ID type below and enter the proper identity.",
-      "maxLength": 128
-    },
-    "subjectDidHash": {
-      "type": "string",
-      "title": "Subject DID Hash",
-      "description": "Keccak256 hash of the canonicalized subject DID, encoded as 0x-prefixed hex string (32 bytes).",
-      "pattern": "^0x[a-fA-F0-9]{64}$",
-      "x-oma3-skip-reason": "computed"
+      "maxLength": 256,
+      "x-oma3-did-methods": ["web", "pkh", "key"]
     },
     "organization": {
       "type": "string",
       "title": "Organization",
       "format": "did",
+      "pattern": "^did:[a-z0-9]+:.+$",
       "description": "DID of the parent organization. Use this when assessing a service or resource that belongs to an organization (e.g., assessing did:web:example.com:service:api, set organization to did:web:example.com). Leave empty when assessing an organization directly.",
-      "maxLength": 128
+      "maxLength": 256,
+      "x-oma3-did-methods": ["web", "pkh"]
     },
     "version": {
-      "type": "string",
+      "$ref": "common.schema.json#/$defs/Version",
       "title": "Software Version",
-      "pattern": "^\\d+\\.\\d+\\.\\d+$",
-      "description": "Semantic version of the software/code that was assessed (e.g., '1.2.3').",
-      "maxLength": 50,
-      "x-oma3-subtype": "semver"
+      "description": "Semantic version of the software/code that was assessed (e.g., '1.2.3')."
     },
-    "payloadVersion": {
+    "versionHW": {
       "type": "string",
-      "title": "Payload Version",
-      "description": "Semver describing the shape of 'payload' (additive changes may bump this without a new schema UID).",
-      "default": "1.0.0",
-      "maxLength": 50,
-      "x-oma3-skip-reason": "default"
-    },
-    "payloadSpecURI": {
-      "type": "string",
-      "format": "uri",
-      "title": "Payload Specification URI",
-      "description": "URI to the JSON schema specification for this attestation type.",
-      "default": "https://reputation.omatrust.org/schemas/security-assessment/payload/1.2.0.json",
-      "maxLength": 256,
-      "x-oma3-skip-reason": "default"
-    },
-    "payloadSpecDigest": {
-      "type": "object",
-      "title": "Payload Specification Digest",
-      "description": "Integrity digest for payloadSpecURI.",
-      "x-oma3-skip-reason": "default",
-      "properties": {
-        "algo": {
-          "type": "string",
-          "title": "Payload Spec Hash Algorithm",
-          "enum": [
-            "keccak256",
-            "sha256"
-          ],
-          "default": "keccak256",
-          "x-oma3-skip-reason": "default",
-          "description": "Hash algorithm used for payload specification digest. Per OMATrust spec, only keccak256 and sha256 are supported."
-        },
-        "hex": {
-          "type": "string",
-          "title": "Payload Spec Hash Value",
-          "pattern": "^0x[a-fA-F0-9]+$",
-          "default": "",
-          "maxLength": 200,
-          "x-oma3-skip-reason": "default",
-          "description": "0x-prefixed hex digest of the payload specification."
-        }
-      },
-      "additionalProperties": false
+      "title": "Hardware Version",
+      "description": "Hardware version of the assessed subject, if applicable.",
+      "maxLength": 50
     },
     "payload": {
       "type": "object",
       "title": "Assessment Payload",
       "description": "Assessment details. Evolvable without changing the envelope. When stored on-chain via EAS, this object is JSON-stringified.",
+      "x-oma3-render": "expanded",
       "properties": {
         "assessmentKind": {
           "type": "string",
-          "enum": [
+          "title": "Assessment Kind",
+          "description": "High-level category of the assessment. Registered kinds are defined in the OMA3 Assessment Kind Registry.",
+          "maxLength": 64,
+          "x-oma3-enum": [
             "pentest",
             "security-audit",
             "code-review",
             "vulnerability-scan"
-          ],
-          "title": "Assessment Kind",
-          "description": "High-level category of the assessment."
+          ]
         },
         "period": {
           "type": "object",
@@ -168,40 +130,10 @@
           "maxLength": 256
         },
         "reportDigest": {
-          "type": "object",
-          "title": "Report Digest",
-          "description": "Content digest of the report for integrity verification.",
-          "properties": {
-            "algo": {
-              "type": "string",
-              "title": "Report Hash Algorithm",
-              "enum": [
-                "keccak256",
-                "sha256"
-              ],
-              "default": "keccak256",
-              "description": "Hash algorithm used for report digest computation. Per OMATrust spec, only keccak256 and sha256 are supported."
-            },
-            "hex": {
-              "type": "string",
-              "title": "Report Hash Value",
-              "pattern": "^0x[a-fA-F0-9]+$",
-              "description": "0x-prefixed hex digest of the canonical report bytes.",
-              "maxLength": 200
-            }
-          },
-          "additionalProperties": false
+          "$ref": "common.schema.json#/$defs/ReportDigest"
         },
         "outcome": {
-          "type": "string",
-          "enum": [
-            "pass",
-            "pass-with-findings",
-            "fail",
-            "informational"
-          ],
-          "title": "Assessment Outcome",
-          "description": "Overall outcome of the assessment."
+          "$ref": "common.schema.json#/$defs/Outcome"
         },
         "metrics": {
           "type": "object",
@@ -210,31 +142,31 @@
           "x-oma3-skip-reason": "unused",
           "properties": {
             "critical": {
-              "type": "number",
+              "type": "integer",
               "title": "Critical Findings",
               "minimum": 0,
               "description": "Number of critical severity findings."
             },
             "high": {
-              "type": "number",
+              "type": "integer",
               "title": "High Findings",
               "minimum": 0,
               "description": "Number of high severity findings."
             },
             "medium": {
-              "type": "number",
+              "type": "integer",
               "title": "Medium Findings",
               "minimum": 0,
               "description": "Number of medium severity findings."
             },
             "low": {
-              "type": "number",
+              "type": "integer",
               "title": "Low Findings",
               "minimum": 0,
               "description": "Number of low severity findings."
             },
             "info": {
-              "type": "number",
+              "type": "integer",
               "title": "Informational Findings",
               "minimum": 0,
               "description": "Number of informational findings."
@@ -265,6 +197,15 @@
         "assessmentKind"
       ],
       "additionalProperties": true
+    },
+    "payloadVersion": {
+      "$ref": "common.schema.json#/$defs/PayloadVersion"
+    },
+    "payloadSpecURI": {
+      "$ref": "common.schema.json#/$defs/PayloadSpecURI"
+    },
+    "payloadSpecDigest": {
+      "$ref": "common.schema.json#/$defs/PayloadSpecDigest"
     },
     "issuedAt": {
       "type": "integer",

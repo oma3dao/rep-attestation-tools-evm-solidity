@@ -2,7 +2,7 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://reputation.omatrust.org/schemas/linked-identifier/attestation/1.0.0.json",
   "title": "Linked Identifier",
-  "description": "An attestation where the attester (a trusted third party) asserts that the subject controls the linked identifier, effectively attesting that two identities are owned by the same entity.",
+  "description": "An attestation where the attester (a trusted third party) asserts that the subject controls the linked identifier. Both subject and linkedId MUST be valid DIDs, creating a symmetric DID-to-DID link that attests two identities are owned by the same entity.",
   "type": "object",
   "required": [
     "attester",
@@ -16,52 +16,73 @@
       "type": "string",
       "description": "Optional JSON-LD context URI for semantic processing.",
       "default": "https://oma3.org/context.jsonld",
+      "maxLength": 256,
       "x-oma3-skip-reason": "metadata"
     },
     "@type": {
       "type": "string",
       "description": "Semantic type identifier, typically 'LinkedIdentifierAttestation'.",
       "default": "LinkedIdentifierAttestation",
+      "maxLength": 100,
       "x-oma3-skip-reason": "metadata"
     },
     "attester": {
       "type": "string",
       "title": "Attester ID",
       "description": "DID of the third-party entity making the assertion. This entity has verified the linkage between the subject and linkedId.",
+      "maxLength": 128,
       "x-oma3-skip-reason": "eas"
     },
     "subject": {
       "type": "string",
       "title": "Subject ID",
       "format": "did",
-      "description": "DID of the subject (such as did:pkh for wallet addresses or did:web for web domains) that is claimed to control the linked identifier.",
-      "maxLength": 128
+      "pattern": "^did:[a-z0-9]+:.+$",
+      "description": "DID of the identity initiating the link (e.g., did:pkh for wallets, did:web for domains, did:handle for social accounts, did:key for keys).",
+      "maxLength": 256,
+      "x-oma3-did-methods": ["handle", "web", "pkh", "key"],
+      "x-oma3-handle-platforms": ["twitter", "github", "discord", "telegram", "lens", "farcaster"]
     },
     "linkedId": {
       "type": "string",
       "title": "Linked Identifier",
-      "description": "The identifier being claimed as controlled by the subject (e.g., a did:web, email address, or domain).",
-      "maxLength": 256
-    },
-    "linkedIdType": {
-      "type": "string",
-      "title": "Linked ID Type",
-      "description": "Type or namespace of the linkedId being asserted. Examples: did:web (for websites), did:key (for keys), email, twitter, github, facebook, discord, telegram, lens, farcaster, or any other well-known identifier type.",
-      "maxLength": 100
+      "format": "did",
+      "pattern": "^did:[a-z0-9]+:.+$",
+      "description": "DID of the identity being linked (e.g., did:handle for social accounts, did:web for domains, did:pkh for wallets, did:key for keys). The DID method encodes the platform/type internally.",
+      "maxLength": 256,
+      "x-oma3-did-methods": ["handle", "web", "pkh", "key"],
+      "x-oma3-handle-platforms": ["twitter", "github", "discord", "telegram", "lens", "farcaster"]
     },
     "method": {
       "type": "string",
-      "enum": [
+      "title": "Verification Method",
+      "description": "Verification method used by the attester to confirm the subject's control of the linkedId. Use 'proof' for cryptographic proofs (pop-eip712, pop-jwt, evidence-pointer). Platform authority or URL-based evidence may be used to prove control of did:handle identifiers. Custom methods are permitted.",
+      "maxLength": 64,
+      "x-oma3-enum": [
+        "proof",
         "http-file",
         "dns-txt",
         "email-challenge",
         "social-post",
         "manual",
-        "oauth",
-        "other"
-      ],
-      "title": "Verification Method",
-      "description": "Verification method used by the attester to confirm the subject's control of the linkedId."
+        "oauth"
+      ]
+    },
+    "revoked": {
+      "type": "boolean",
+      "title": "Revoked",
+      "description": "Indicates if this linked identifier attestation has been revoked. When true, the link between identifiers should not be trusted. Revocation is enforced by EAS/BAS at the transport level.",
+      "default": false,
+      "x-oma3-skip-reason": "eas"
+    },
+    "proofs": {
+      "type": "array",
+      "title": "Proofs",
+      "description": "Array of cryptographic proofs demonstrating the subject's control over the linked identifier. Use proofPurpose='shared-control' for linked identifier attestations.",
+      "items": {
+        "$ref": "common.schema.json#/$defs/Proof"
+      },
+      "minItems": 1
     },
     "issuedAt": {
       "type": "integer",
@@ -87,5 +108,17 @@
       "x-oma3-subtype": "timestamp"
     }
   },
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "method": { "const": "proof" }
+        }
+      },
+      "then": {
+        "required": ["proofs"]
+      }
+    }
+  ],
   "additionalProperties": false
 }

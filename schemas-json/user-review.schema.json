@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://reputation.omatrust.org/schemas/userreview/attestation/1.2.0.json",
+  "$id": "https://reputation.omatrust.org/schemas/userreview/attestation/1.3.0.json",
   "title": "User Review",
   "description": "A flat schema for structured 1–5 star reviews of tokenized applications or digital services. Designed for onchain attestation and offchain anchoring.",
   "type": "object",
@@ -23,73 +23,48 @@
       "type": "string",
       "description": "Optional JSON-LD context URI for semantic processing.",
       "default": "https://oma3.org/context.jsonld",
+      "maxLength": 256,
       "x-oma3-skip-reason": "metadata"
     },
     "@type": {
       "type": "string",
       "description": "Semantic type identifier, typically 'UserReview'.",
       "default": "UserReview",
+      "maxLength": 100,
       "x-oma3-skip-reason": "metadata"
     },
     "attester": {
       "type": "string",
       "title": "Attester ID",
       "description": "Ethereum address or DID of the entity submitting the review.",
+      "maxLength": 128,
       "x-oma3-skip-reason": "eas"
     },
     "subject": {
       "type": "string",
-      "title": "Subject ID",
+      "title": "Review Subject",
       "format": "did",
+      "pattern": "^did:[a-z0-9]+:.+$",
       "description": "DID of the thing being reviewed.",
-      "maxLength": 128
-    },
-    "subjectDidHash": {
-      "type": "string",
-      "title": "Subject DID Hash",
-      "description": "Keccak256 hash of the canonicalized subject DID, encoded as 0x-prefixed hex string (32 bytes).",
-      "pattern": "^0x[a-fA-F0-9]{64}$",
-      "x-oma3-skip-reason": "computed"
-    },
-    "organization": {
-      "type": "string",
-      "title": "Owning Organization",
-      "format": "did",
-      "description": "DID of the service organization. Use this when reviewing a service that belongs to an organization. Leave empty when reviewing an organization directly.",
-      "maxLength": 128
+      "maxLength": 256,
+      "x-oma3-did-methods": ["web", "pkh", "key"]
     },
     "version": {
-      "type": "string",
+      "$ref": "common.schema.json#/$defs/Version",
       "title": "Subject Version",
-      "pattern": "^\\d+\\.\\d+\\.\\d+$",
-      "description": "Version of the reviewed subject (e.g., app or API version).",
-      "maxLength": 50,
-      "x-oma3-subtype": "semver"
+      "description": "Version of the reviewed subject (e.g., app or API version)."
     },
-    "summary": {
-      "type": "string",
-      "title": "Review Summary",
-      "description": "Short headline for the review (e.g., 'Loved it', 'Buggy experience').",
-      "maxLength": 200
+    "ratingValue": {
+      "type": "integer",
+      "enum": [1, 2, 3, 4, 5],
+      "title": "Rating",
+      "description": "Numerical rating from 1 (worst) to 5 (best)."
     },
     "reviewBody": {
       "type": "string",
       "title": "Review",
       "description": "Free-form text describing your experience or feedback.",
       "maxLength": 500
-    },
-    "author": {
-      "type": "string",
-      "title": "Author ID",
-      "description": "Your DID, handle, or name.",
-      "maxLength": 200
-    },
-    "ratingValue": {
-      "type": "integer",
-      "minimum": 1,
-      "maximum": 5,
-      "title": "Rating",
-      "description": "Numerical rating from 1 (worst) to 5 (best)."
     },
     "screenshotUrls": {
       "type": "array",
@@ -99,81 +74,25 @@
         "type": "string",
         "format": "uri",
         "maxLength": 256
-      }
-    },
-    "payloadVersion": {
-      "type": "string",
-      "title": "Payload Version",
-      "description": "Semver describing the shape of 'payload' (additive changes may bump this without a new schema UID).",
-      "default": "1.0.0",
-      "maxLength": 50,
-      "x-oma3-skip-reason": "unused"
-    },
-    "payloadSpecURI": {
-      "type": "string",
-      "format": "uri",
-      "title": "Payload Specification URI",
-      "description": "URI to the JSON schema specification for this attestation type.",
-      "default": "https://reputation.omatrust.org/schemas/user-review/payload/1.0.0.json",
-      "maxLength": 256,
-      "x-oma3-skip-reason": "unused"
-    },
-    "payloadSpecDigest": {
-      "type": "object",
-      "title": "Payload Specification Digest",
-      "description": "Integrity digest for payloadSpecURI.",
-      "x-oma3-skip-reason": "unused",
-      "properties": {
-        "algo": {
-          "type": "string",
-          "title": "Payload Spec Hash Algorithm",
-          "enum": [
-            "keccak256",
-            "sha256"
-          ],
-          "default": "keccak256",
-          "description": "Hash algorithm used for payload specification digest."
-        },
-        "hex": {
-          "type": "string",
-          "title": "Payload Spec Hash Value",
-          "pattern": "^0x[a-fA-F0-9]+$",
-          "default": "",
-          "maxLength": 200,
-          "description": "0x-prefixed hex digest of the payload specification."
-        }
       },
-      "additionalProperties": false
+      "maxItems": 10
     },
-    "payload": {
-      "type": "object",
-      "title": "Review Payload",
-      "description": "Extended review details. Evolvable without changing the envelope. When stored on-chain via EAS, this object is JSON-stringified.",
-      "x-oma3-skip-reason": "unused",
-      "additionalProperties": true
+    "proofs": {
+      "type": "array",
+      "title": "Proofs",
+      "description": "Array of cryptographic proofs demonstrating the reviewer used the service. Use proofPurpose='commercial-tx' for user review attestations.",
+      "items": {
+        "$ref": "common.schema.json#/$defs/Proof"
+      },
+      "minItems": 1
     },
     "issuedAt": {
       "type": "integer",
       "minimum": 0,
       "title": "Issued Date",
-      "description": "Timestamp (in seconds) when the review was issued. Default is the current time.",
+      "description": "Timestamp (in seconds) when the review was issued. EAS provides this via attestation timestamp.",
       "x-oma3-subtype": "timestamp",
-      "x-oma3-default": "current-timestamp"
-    },
-    "effectiveAt": {
-      "type": "integer",
-      "minimum": 0,
-      "title": "Effective Date",
-      "description": "Timestamp (in seconds) when the review becomes effective. Default is the current time.",
-      "x-oma3-subtype": "timestamp",
-      "x-oma3-default": "current-timestamp"
-    },
-    "expiresAt": {
-      "type": "integer",
-      "minimum": 0,
-      "title": "Expiration Date",
-      "description": "Timestamp (in seconds) after which the review expires. Leave empty if the review does not expire.",
-      "x-oma3-subtype": "timestamp"
+      "x-oma3-skip-reason": "eas"
     }
   },
   "additionalProperties": false

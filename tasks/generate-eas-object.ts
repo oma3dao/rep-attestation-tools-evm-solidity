@@ -20,6 +20,7 @@ interface JsonSchemaProperty {
   then?: JsonSchemaProperty;
   else?: JsonSchemaProperty;
   properties?: { [key: string]: JsonSchemaProperty };
+  $ref?: string; // JSON Schema $ref for referencing other schemas
   // ... other JSON schema keywords for properties if needed
 }
 
@@ -30,7 +31,111 @@ interface InputJsonSchema {
     [key: string]: JsonSchemaProperty;
   };
   required?: string[];
+  $defs?: { [key: string]: JsonSchemaProperty }; // Local definitions
   // ... other top-level JSON schema keywords if needed
+}
+
+// Cache for loaded external schemas
+const schemaCache: Map<string, any> = new Map();
+
+/**
+ * Load an external schema file and cache it
+ * @param schemaPath Relative path to the schema file (e.g., "common.schema.json")
+ * @param baseDir Base directory where schemas are located
+ */
+function loadExternalSchema(schemaPath: string, baseDir: string): any {
+  if (schemaCache.has(schemaPath)) {
+    return schemaCache.get(schemaPath);
+  }
+
+  const fullPath = path.resolve(baseDir, schemaPath);
+  if (!fs.existsSync(fullPath)) {
+    console.warn(`Warning: Referenced schema not found: ${fullPath}`);
+    return null;
+  }
+
+  try {
+    const content = fs.readFileSync(fullPath, 'utf-8');
+    const schema = JSON.parse(content);
+    schemaCache.set(schemaPath, schema);
+    return schema;
+  } catch (e: any) {
+    console.warn(`Warning: Failed to load schema ${fullPath}: ${e.message}`);
+    return null;
+  }
+}
+
+/**
+ * Resolve a $ref pointer to its actual schema definition
+ * Supports:
+ * - Local refs: "#/$defs/SomeDef"
+ * - External refs: "common.schema.json#/$defs/SomeDef"
+ * 
+ * @param ref The $ref string
+ * @param currentSchema The current schema (for local refs)
+ * @param baseDir Base directory for external schema files
+ */
+function resolveRef(ref: string, currentSchema: InputJsonSchema, baseDir: string): JsonSchemaProperty | null {
+  if (!ref) return null;
+
+  let targetSchema: any = currentSchema;
+  let pointer: string = ref;
+
+  // Check if it's an external reference (contains a file path before #)
+  if (ref.includes('#') && !ref.startsWith('#')) {
+    const [filePath, fragment] = ref.split('#');
+    targetSchema = loadExternalSchema(filePath, baseDir);
+    if (!targetSchema) {
+      console.warn(`Warning: Could not load external schema for ref: ${ref}`);
+      return null;
+    }
+    pointer = '#' + fragment;
+  }
+
+  // Now resolve the JSON pointer within the target schema
+  // Expected format: "#/$defs/DefinitionName" or "#/properties/propName"
+  if (!pointer.startsWith('#/')) {
+    console.warn(`Warning: Unsupported $ref format: ${ref}`);
+    return null;
+  }
+
+  const pathParts = pointer.substring(2).split('/'); // Remove "#/" and split
+  let current: any = targetSchema;
+
+  for (const part of pathParts) {
+    if (current && typeof current === 'object' && part in current) {
+      current = current[part];
+    } else {
+      console.warn(`Warning: Could not resolve path "${pointer}" in schema. Part "${part}" not found.`);
+      return null;
+    }
+  }
+
+  return current as JsonSchemaProperty;
+}
+
+/**
+ * Resolve a property, following $ref if present
+ * @param prop The property that may contain a $ref
+ * @param currentSchema The current schema (for local refs)
+ * @param baseDir Base directory for external schema files
+ */
+function resolveProperty(prop: JsonSchemaProperty, currentSchema: InputJsonSchema, baseDir: string): JsonSchemaProperty {
+  if (!prop) return prop;
+
+  // If property has a $ref, resolve it and merge with any local overrides
+  if (prop.$ref) {
+    const resolved = resolveRef(prop.$ref, currentSchema, baseDir);
+    if (resolved) {
+      // Merge: local properties override resolved ones (except $ref itself)
+      const { $ref, ...localProps } = prop;
+      return { ...resolved, ...localProps };
+    }
+    // If resolution failed, return original (will likely fail type mapping)
+    console.warn(`Warning: Failed to resolve $ref: ${prop.$ref}`);
+  }
+
+  return prop;
 }
 
 // --- EAS Output Interface ---
@@ -140,9 +245,16 @@ function jsonTypeToAbi(effectiveType: string | undefined, ctx: { propName: strin
  * to an EAS ABI type string.
  * @param jsonProperty The JSON Schema property definition.
  * @param propName The property name (for context)
+ * @param currentSchema The current schema (for resolving $refs)
+ * @param baseDir Base directory for external schema files
  * @returns EAS ABI type string or null if not mappable.
  */
-function mapJsonSchemaPropertyToAbiType(jsonProperty: JsonSchemaProperty, propName: string): string | null {
+function mapJsonSchemaPropertyToAbiType(
+  jsonProperty: JsonSchemaProperty,
+  propName: string,
+  currentSchema?: InputJsonSchema,
+  baseDir?: string
+): string | null {
   // Special case: purpose is always string for EAS stability (handles root-level conditionals)
   if (propName === "purpose") return "string";
 
@@ -152,17 +264,25 @@ function mapJsonSchemaPropertyToAbiType(jsonProperty: JsonSchemaProperty, propNa
   // Handle arrays specially
   if (effectiveType === 'array') {
     let itemType: string | undefined;
+    let resolvedItems = jsonProperty.items;
 
     if (jsonProperty.items) {
-      // Try to resolve item type (handles nested schemas)
-      itemType = resolveJsonType(jsonProperty.items);
+      // If items has a $ref, resolve it first
+      if (jsonProperty.items.$ref && currentSchema && baseDir) {
+        resolvedItems = resolveProperty(jsonProperty.items, currentSchema, baseDir);
+      }
 
-      // Fallback to direct type if available
-      if (!itemType && jsonProperty.items.type) {
-        if (Array.isArray(jsonProperty.items.type)) {
-          itemType = jsonProperty.items.type.find(t => t !== "null") || jsonProperty.items.type[0];
-        } else {
-          itemType = jsonProperty.items.type;
+      // Try to resolve item type (handles nested schemas)
+      if (resolvedItems) {
+        itemType = resolveJsonType(resolvedItems);
+
+        // Fallback to direct type if available
+        if (!itemType && resolvedItems.type) {
+          if (Array.isArray(resolvedItems.type)) {
+            itemType = resolvedItems.type.find(t => t !== "null") || resolvedItems.type[0];
+          } else {
+            itemType = resolvedItems.type;
+          }
         }
       }
     }
@@ -177,12 +297,12 @@ function mapJsonSchemaPropertyToAbiType(jsonProperty: JsonSchemaProperty, propNa
         // Note: EAS/ABI doesn't typically support arrays of complex objects directly in this flat schema string.
         // Arrays of arrays are also not standard in this simple mapping.
         default:
-          console.warn(`Unsupported 'items' type "${itemType}" in array property. Skipping array property.`);
+          console.warn(`Unsupported 'items' type "${itemType}" in array property '${propName}'. Skipping array property.`);
           return null;
       }
       return `${baseAbiType}[]`; // e.g., string[]
     } else {
-      console.warn("Array property encountered without valid 'items.type' definition. Skipping property.");
+      console.warn(`Array property '${propName}' encountered without valid 'items.type' definition. Skipping property.`);
       return null;
     }
   }
@@ -195,25 +315,40 @@ function mapJsonSchemaPropertyToAbiType(jsonProperty: JsonSchemaProperty, propNa
 /**
  * Builds the EAS schema string from JSON Schema properties.
  * @param properties The 'properties' object from a JSON Schema.
+ * @param currentSchema The current schema (for resolving local $refs).
+ * @param baseDir Base directory for external schema files.
  * @returns EAS ABI-like schema string.
  */
-function buildSchemaString(properties?: { [key: string]: JsonSchemaProperty }): string {
+function buildSchemaString(
+  properties: { [key: string]: JsonSchemaProperty } | undefined,
+  currentSchema: InputJsonSchema,
+  baseDir: string
+): string {
   if (!properties) {
     return "";
   }
   const abiFields: string[] = [];
   for (const key in properties) {
     if (Object.prototype.hasOwnProperty.call(properties, key)) {
-      const property = properties[key];
+      // Resolve $ref if present
+      const rawProperty = properties[key];
+      const property = resolveProperty(rawProperty, currentSchema, baseDir);
 
-      // Skip fields that have x-oma3-skip-reason (metadata, eas, computed, etc.)
-      if (property["x-oma3-skip-reason"]) {
-        console.log(`Skipping field '${key}' due to x-oma3-skip-reason: ${property["x-oma3-skip-reason"]}`);
+      // Skip fields based on x-oma3-skip-reason:
+      // - "metadata": JSON-LD fields not stored on-chain (@context, @type)
+      // - "eas": Fields provided by EAS itself (attester, revoked)
+      // - "unused": Reserved fields - INCLUDE in schema per spec ("MUST preserve if present")
+      const skipReason = property["x-oma3-skip-reason"];
+      if (skipReason === "metadata" || skipReason === "eas") {
+        console.log(`Skipping field '${key}' due to x-oma3-skip-reason: ${skipReason}`);
         continue;
       }
+      if (skipReason === "unused") {
+        console.log(`Including reserved field '${key}' in schema (x-oma3-skip-reason: unused)`);
+      }
 
-      // Pass the whole property object to the mapping function
-      const abiType = mapJsonSchemaPropertyToAbiType(property, key);
+      // Pass the whole property object to the mapping function (with context for $ref resolution)
+      const abiType = mapJsonSchemaPropertyToAbiType(property, key, currentSchema, baseDir);
       if (abiType) {
         abiFields.push(`${abiType} ${key}`);
       }
@@ -264,8 +399,11 @@ task("generate-eas-object", "Generate an EAS-compatible object from a JSON Schem
     const autoName = schemaTitle.replace(/\s+/g, '-'); // Replace spaces in title for filename
     const easName = nameOverride || autoName;
 
-    // Build EAS schema string
-    const schemaString = buildSchemaString(inputSchema.properties);
+    // Get the base directory for resolving $ref references (same directory as the schema file)
+    const schemaBaseDir = path.dirname(schemaFilePath);
+
+    // Build EAS schema string (with $ref resolution support)
+    const schemaString = buildSchemaString(inputSchema.properties, inputSchema, schemaBaseDir);
 
     // Determine revocable flag
     const revocable = revocableArg.toLowerCase() === 'true';

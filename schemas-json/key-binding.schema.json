@@ -1,0 +1,156 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://reputation.omatrust.org/schemas/keybinding/attestation/1.0.0.json",
+  "title": "Key Binding",
+  "description": "Publishes a cryptographic key associated with a DID. Supports multi-purpose bindings, rotation, and revocation. Each attestation binds one key to one subject.",
+  "type": "object",
+  "keywords": [
+    "key",
+    "binding",
+    "cryptography",
+    "identity",
+    "did",
+    "attestation",
+    "reputation"
+  ],
+  "required": [
+    "attester",
+    "subject",
+    "keyId",
+    "keyPurpose",
+    "proofs",
+    "issuedAt"
+  ],
+  "properties": {
+    "@context": {
+      "type": "string",
+      "description": "Optional JSON-LD context URI for semantic processing.",
+      "default": "https://oma3.org/context.jsonld",
+      "maxLength": 256,
+      "x-oma3-skip-reason": "metadata"
+    },
+    "@type": {
+      "type": "string",
+      "description": "Semantic type identifier, typically 'KeyBinding'.",
+      "default": "KeyBinding",
+      "maxLength": 100,
+      "x-oma3-skip-reason": "metadata"
+    },
+    "attester": {
+      "type": "string",
+      "title": "Attester ID",
+      "description": "DID or address of the entity authorizing this key binding.",
+      "maxLength": 128,
+      "x-oma3-skip-reason": "eas"
+    },
+    "subject": {
+      "type": "string",
+      "title": "Subject ID",
+      "format": "did",
+      "pattern": "^did:[a-z0-9]+:.+$",
+      "description": "DID to which this key is bound.",
+      "maxLength": 256,
+      "x-oma3-did-methods": ["web", "pkh", "key", "handle"]
+    },
+    "keyId": {
+      "type": "string",
+      "title": "Key Identifier",
+      "format": "did",
+      "pattern": "^did:[a-z0-9]+:.+$",
+      "description": "DID representing this key. If using did:key or did:pkh:eip155, publicKeyJwk is optional.",
+      "maxLength": 256,
+      "x-oma3-did-methods": ["key", "pkh", "web"]
+    },
+    "publicKeyJwk": {
+      "type": "object",
+      "title": "Public Key (JWK)",
+      "description": "JWK-formatted public key. Required if keyId is not a self-certifying did:key. Paste the full JWK JSON object.",
+      "x-oma3-render": "raw",
+      "properties": {
+          "kty": { "type": "string", "maxLength": 16 },
+          "crv": { "type": "string", "maxLength": 32 },
+          "x": { "type": "string", "maxLength": 128 },
+          "y": { "type": "string", "maxLength": 128 },
+          "alg": { "type": "string", "maxLength": 32 }
+      },
+      "required": ["kty", "crv", "x", "y", "alg"]
+    },
+    "keyPurpose": {
+      "type": "array",
+      "title": "Key Purpose",
+      "description": "Permitted purposes for this key (e.g., 'authentication', 'assertionMethod', 'keyAgreement', 'capabilityInvocation', 'capabilityDelegation').",
+      "items": {
+        "type": "string",
+        "minLength": 1,
+        "maxLength": 64,
+        "pattern": "^[a-zA-Z0-9\\-\\.]+$",
+        "x-oma3-enum": [
+          "authentication",
+          "assertionMethod",
+          "keyAgreement",
+          "capabilityInvocation",
+          "capabilityDelegation"
+        ]
+      },
+      "minItems": 1,
+      "uniqueItems": true
+    },
+    "revoked": {
+      "type": "boolean",
+      "title": "Revoked",
+      "description": "Indicates if this key binding has been revoked. For EAS, this is handled natively by the protocol.",
+      "default": false,
+      "x-oma3-skip-reason": "eas"
+    },
+    "proofs": {
+      "type": "array",
+      "title": "Proofs",
+      "description": "Array of cryptographic proofs demonstrating the subject's control over the key. Use proofPurpose='shared-control' for key binding attestations.",
+      "items": {
+        "$ref": "common.schema.json#/$defs/Proof"
+      },
+      "minItems": 1
+    },
+    "issuedAt": {
+      "type": "integer",
+      "minimum": 0,
+      "title": "Issued Date",
+      "description": "Unix timestamp (in seconds) when the key binding was issued.",
+      "x-oma3-subtype": "timestamp",
+      "x-oma3-default": "current-timestamp"
+    },
+    "effectiveAt": {
+      "type": "integer",
+      "minimum": 0,
+      "title": "Effective Date",
+      "description": "Unix timestamp (in seconds) when the key binding becomes effective.",
+      "x-oma3-subtype": "timestamp",
+      "x-oma3-default": "current-timestamp"
+    },
+    "expiresAt": {
+      "type": "integer",
+      "minimum": 0,
+      "title": "Expiration Date",
+      "x-oma3-subtype": "timestamp"
+    }
+  },
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "keyId": { 
+            "pattern": "^did:(key:|pkh:eip155:)" 
+          }
+        }
+      },
+      "then": {
+        "description": "If keyId is did:key or did:pkh:eip155 (Ethereum), publicKeyJwk is optional (but allowed)."
+      },
+      "else": {
+        "required": ["publicKeyJwk"],
+        "description": "If keyId is NOT self-certifying (did:key) or Ethereum-based (did:pkh:eip155), publicKeyJwk is strictly required."
+      }
+    }
+  ],
+  "additionalProperties": false
+}
