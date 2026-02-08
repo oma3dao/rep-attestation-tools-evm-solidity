@@ -8,7 +8,7 @@ import "./eas-attest";
 import "./eas-encode-data";
 import "./eas-get-attestation";
 import "./eas-get-schema";
-import "./eas-register-schema";
+
 import "./eas-revoke";
 import "./test-schema-uid";
 
