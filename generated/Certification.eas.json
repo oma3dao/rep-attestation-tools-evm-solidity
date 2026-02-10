@@ -1,6 +1,5 @@
 {
   "name": "Certification",
   "schema": "string subject, string organization, string version, string versionHW, string subjectURI, string programID, string programURI, string assessor, string assessorURI, string certificationLevel, string outcome, string reportURI, string reportDigest, string payload, string payloadVersion, string payloadSpecURI, string payloadSpecDigest, uint256 issuedAt, uint256 effectiveAt, uint256 expiresAt",
-  "revocable": false,
-  "resolver": "0x0000000000000000000000000000000000000000"
+  "revocable": false
 }

@@ -2,9 +2,6 @@ import { task } from "hardhat/config";
 import * as fs from 'fs';
 import * as path from 'path';
 
-import { ZERO_ADDRESS } from "../utils/constants";
-import { ethers } from 'ethers';
-
 // --- JSON Schema Interfaces (Simplified for our use) ---
 interface JsonSchemaProperty {
   type?: string | string[]; // e.g., "string", "integer", ["string", "null"]
@@ -143,7 +140,6 @@ interface EasSchemaObject {
   name: string;
   schema: string; // The ABI-like schema string for EAS
   revocable: boolean;
-  resolver: string;
 }
 
 // --- Helper Functions ---
@@ -357,15 +353,28 @@ function buildSchemaString(
   return abiFields.join(', ');
 }
 
+/**
+ * Auto-detect if schema should be revocable based on presence of 'revoked' field
+ * with x-oma3-skip-reason: "eas" (meaning EAS handles revocation natively)
+ */
+function detectRevocable(properties: { [key: string]: JsonSchemaProperty } | undefined): boolean {
+  if (!properties) return false;
+  
+  const revokedField = properties['revoked'];
+  if (revokedField && revokedField['x-oma3-skip-reason'] === 'eas') {
+    return true;
+  }
+  return false;
+}
+
 // --- Hardhat Task ---
 
 task("generate-eas-object", "Generate an EAS-compatible object from a JSON Schema file.")
   .addParam("schema", "Path to the input JSON Schema file")
   .addOptionalParam("name", "Override EAS object name/output file name. By default, derived from schema's 'title'.")
-  .addOptionalParam("revocable", "Set schema revocability (true/false). Default: false.", "false")
-  .addOptionalParam("resolver", "Resolver address for the EAS schema. Default: zero address.", ZERO_ADDRESS)
+  .addOptionalParam("revocable", "Override schema revocability (true/false). By default, auto-detected from schema's 'revoked' field.")
   .setAction(async (taskArgs, hre) => {
-    const { schema: schemaFilePathArg, name: nameOverride, revocable: revocableArg, resolver: resolverArg } = taskArgs;
+    const { schema: schemaFilePathArg, name: nameOverride, revocable: revocableArg } = taskArgs;
     const schemaFilePath = path.resolve(process.cwd(), schemaFilePathArg);
     const outputDir = path.resolve(process.cwd(), 'generated');
 
@@ -388,6 +397,12 @@ task("generate-eas-object", "Generate an EAS-compatible object from a JSON Schem
 
     const inputSchema: InputJsonSchema = parsedSchemaContent as InputJsonSchema;
 
+    // Check for top-level properties (shared definition files like common.schema.json won't have any)
+    if (!inputSchema.properties || Object.keys(inputSchema.properties).length === 0) {
+      console.error(`Error: Schema at ${schemaFilePath} has no top-level properties. It may be a shared definitions file rather than an attestation schema.`);
+      process.exit(1);
+    }
+
     // Check for title and fail if none exists
     if (!inputSchema.title && !nameOverride) {
       console.error(`Error: Schema at ${schemaFilePath} does not have a title property, and no --name was provided.`);
@@ -405,23 +420,26 @@ task("generate-eas-object", "Generate an EAS-compatible object from a JSON Schem
     // Build EAS schema string (with $ref resolution support)
     const schemaString = buildSchemaString(inputSchema.properties, inputSchema, schemaBaseDir);
 
-    // Determine revocable flag
-    const revocable = revocableArg.toLowerCase() === 'true';
-
-    // Determine resolver address
-    const resolver = resolverArg ? ethers.getAddress(resolverArg) : ZERO_ADDRESS;
+    // Determine revocable flag:
+    // 1. CLI override takes precedence
+    // 2. Otherwise auto-detect from schema's 'revoked' field with x-oma3-skip-reason: "eas"
+    // 3. Default to false if not specified and not detected
+    let revocable: boolean;
+    if (revocableArg !== undefined) {
+      revocable = revocableArg.toLowerCase() === 'true';
+      console.log(`Revocable: ${revocable} (from CLI override)`);
+    } else {
+      revocable = detectRevocable(inputSchema.properties);
+      console.log(`Revocable: ${revocable} (auto-detected from schema)`);
+    }
 
     const easSchemaObject: EasSchemaObject = {
       name: easName,
       schema: schemaString,
       revocable,
-      resolver,
     };
 
-    // Determine output filename suffix based on network
-    const networkSuffix = hre.network.name === 'omachainTestnet' ? 'eastest' : 'eas';
-
-    const outputFilePath = path.join(outputDir, `${easName}.${networkSuffix}.json`);
+    const outputFilePath = path.join(outputDir, `${easName}.eas.json`);
     fs.writeFileSync(outputFilePath, JSON.stringify(easSchemaObject, null, 2));
     console.log(`Successfully generated EAS object at: ${outputFilePath}`);
     console.log("Generated EAS Object:", JSON.stringify(easSchemaObject, null, 2));

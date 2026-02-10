@@ -394,59 +394,75 @@ To deploy or test on OMAchain Testnet, you will need testnet tokens for gas fees
 - Enter your wallet address and request tokens
 - Use these tokens to pay for transactions on OMAchain Testnet
 
-### Schema File Naming Conventions
+### Generated Schema File Naming Conventions
 
-We use specific file extensions to distinguish between testnet and mainnet files:
+Generated schema files use the attestation framework name as their suffix, not the target chain. This is because the schema string and revocable flag are derived from the JSON Schema definition and are the same regardless of which chain the schema is deployed to.
 
-- Testnet schema files: `[name].eastest.json`
-- Mainnet schema files: `[name].eas.json`
-- Testnet deployment info: `[name].deployed.eastest.json`
-- Mainnet deployment info: `[name].deployed.eas.json`
+- **EAS schemas**: `[name].eas.json` — for the Ethereum Attestation Service (used on OMAchain, Base, Ethereum, Arbitrum, etc.)
+- **BAS schemas**: `[name].bastest.json` / `[name].bas.json` — for the BNB Attestation Service (used on BSC)
 
-This naming convention helps prevent accidental deployments to the wrong network.
+Future attestation frameworks (e.g., Solana) would follow the same pattern: `[name].solana.json`.
+
+Chain-specific data (UID, block number, network) is stored in deployment files:
+
+- `[name].deployed.eastest.json` — EAS testnet deployment info
+- `[name].deployed.eas.json` — EAS mainnet deployment info
+- `[name].deployed.bastest.json` — BAS testnet deployment info
+- `[name].deployed.bas.json` — BAS mainnet deployment info
 
 ### Generating EAS Schema Objects
 
 To generate an EAS-compatible schema object from a JSON Schema file, use the `generate-eas-object` task:
 
 ```bash
-# For testnet (default)
 npx hardhat generate-eas-object --schema schemas-json/endorsement.schema.json --network omachainTestnet
-
-# For mainnet (when available)
-npx hardhat generate-eas-object --schema schemas-json/endorsement.schema.json --network omachainMainnet
 ```
+
+The `--network` flag is required by Hardhat but does not affect the generated output. The same `[name].eas.json` file is produced regardless of network.
 
 **Available Options:**
 - `--schema` (required): Path to the input JSON Schema file
-- `--revocable` (optional): Set schema revocability (true/false, default: false)
-- `--resolver` (optional): Resolver address for the EAS schema (default: zero address)
-- `--network` (required): Target network (omachainTestnet or omachainMainnet)
+- `--revocable` (optional): Override schema revocability (true/false). By default, auto-detected from schema.
+- `--network` (required): Any configured Hardhat network (required by Hardhat, does not affect output)
+
+**Revocability Auto-Detection:**
+The `revocable` flag is automatically detected from the JSON schema. If the schema has a `revoked` field with `x-oma3-skip-reason: "eas"`, the generated EAS object will have `revocable: true`. This indicates that EAS should handle revocation natively for this schema type (e.g., Key Binding attestations that need to be revocable for key rotation).
 
 **Output:**
-- Testnet: `generated/[name].eastest.json`
-- Mainnet: `generated/[name].eas.json`
+- `generated/[name].eas.json` — chain-independent schema definition
 
 ### Deploying EAS Schemas
 
-To deploy a schema to the EAS registry on OMAchain testnet or mainnet, use the `deploy-eas-schema` task:
+To deploy a schema to the EAS registry, use the `deploy-eas-schema` task:
 
 ```bash
-# Deploy to testnet
-npx hardhat deploy-eas-schema --file generated/Endorsement.eastest.json --network omachainTestnet
+# Deploy to OMAchain testnet (no resolver - server-side validation)
+npx hardhat deploy-eas-schema --file generated/Endorsement.eas.json --network omachainTestnet
 
-# Deploy to mainnet (when available)
+# Deploy to OMAchain mainnet (no resolver)
 npx hardhat deploy-eas-schema --file generated/Endorsement.eas.json --network omachainMainnet
+
+# Deploy to external chains WITH fee resolver (Base, Ethereum, Arbitrum, etc.)
+npx hardhat deploy-eas-schema --file generated/Endorsement.eas.json --resolver 0xYourFeeResolverAddress --network base
 ```
 
+See `app-registry-evm-solidity/contracts/eas/OMATrustFeeResolver.sol` for the resolver implementation and `app-registry-evm-solidity/tasks/deploy/fee-resolver.ts` for this resolver's deployment script.
+
 **Available Options:**
-- `--file` (required): Path to the .eas.json or .eastest.json file
+- `--file` (required): Path to the .eas.json file
+- `--resolver` (optional): Resolver contract address. Use for fee collection on external chains. Default: zero address.
 - `--wait` (optional): Time to wait in seconds before verifying schema (default: 5)
-- `--network` (required): Network to deploy to (omachainMainnet or omachainTestnet)
+- `--network` (required): Network to deploy to
+
+**Resolver Usage:**
+- **OMAChain**: Omit `--resolver` (uses zero address). Server-side validation handles spam prevention.
+- **External chains**: Pass `--resolver` with the deployed `OMATrustFeeResolver` address to collect fees per attestation.
+
+To deploy the fee resolver, see `app-registry-evm-solidity/contracts/eas/README.md`.
 
 **Output:**
-- Testnet: `generated/[name].deployed.eastest.json`
-- Mainnet: `generated/[name].deployed.eas.json`
+- `generated/[name].deployed.eastest.json` (testnet)
+- `generated/[name].deployed.eas.json` (mainnet)
 
 The output file contains the schema UID, block number, and network information, which can be used for creating and searching for attestations with this schema.
 
@@ -548,7 +564,7 @@ npx hardhat generate-eas-object \
 
 # 2. Deploy the schema
 npx hardhat deploy-eas-schema \
-  --file generated/Endorsement.eastest.json \
+  --file generated/Endorsement.eas.json \
   --network omachainTestnet
 
 # Output shows:
@@ -600,14 +616,14 @@ After deploying a schema, you can verify it exists on-chain and matches your loc
 npx hardhat verify-eas-schema --network omachainTestnet --file generated/Endorsement.deployed.eastest.json
 
 # Verify using schema object file
-npx hardhat verify-eas-schema --network omachainTestnet --file generated/Endorsement.eastest.json
+npx hardhat verify-eas-schema --network omachainTestnet --file generated/Endorsement.eas.json
 
 # Verify using UID directly
 npx hardhat verify-eas-schema --network omachainTestnet --uid 0xda787e2c5b89cd1b2c77d7a9565573cc89bac752e9b587f3348e85c62d606a68
 ```
 
 **Available Options:**
-- `--file` (optional): Path to the .eastest.json or .deployed.eastest.json file
+- `--file` (optional): Path to the .eas.json or .deployed.eastest.json file
 - `--uid` (optional): Schema UID to verify directly
 - `--network` (required): Network to verify on (omachainTestnet or omachainMainnet)
 
@@ -633,37 +649,29 @@ This repository provides tools for generating and deploying schema definitions f
 
 ### Schema File Naming Conventions
 
-We use specific file extensions to distinguish between testnet and mainnet files:
+See [Generated Schema File Naming Conventions](#generated-schema-file-naming-conventions) above. BAS schemas follow the same pattern:
 
-- Testnet schema files: `[name].bastest.json`
-- Mainnet schema files: `[name].bas.json`
-- Testnet deployment info: `[name].deployed.bastest.json`
-- Mainnet deployment info: `[name].deployed.bas.json`
-
-This naming convention helps prevent accidental deployments to the wrong network.
+- **BAS schemas**: `[name].bas.json` — chain-independent schema definition
+- **Deployment info**: `[name].deployed.bastest.json` / `[name].deployed.bas.json`
 
 ### Generating BAS Schema Objects
 
 To generate a BAS-compatible schema object from a JSON Schema file, use the `generate-bas-object` task:
 
 ```bash
-# For testnet (default)
-npx hardhat generate-bas-object --schema schemas-json/endorsement.schema.json --name Endorsement
-
-# For mainnet
-npx hardhat generate-bas-object --schema schemas-json/endorsement.schema.json --name Endorsement --network bsc
+npx hardhat generate-bas-object --schema schemas-json/endorsement.schema.json --name Endorsement --network bscTestnet
 ```
+
+The `--network` flag is required by Hardhat but does not affect the generated output.
 
 **Available Options:**
 - `--schema` (required): Path to the input JSON Schema file
 - `--name` (optional): Override the schema name (defaults to the schema's title)
 - `--revocable` (optional): Set schema revocability (true/false, default: false)
-- `--resolver` (optional): Resolver address for the BAS schema (default: zero address)
-- `--network` (optional): Target network (defaults to testnet if not specified)
+- `--network` (required): Any configured Hardhat network (required by Hardhat, does not affect output)
 
 **Output:**
-- Testnet: `generated/[name].bastest.json`
-- Mainnet: `generated/[name].bas.json`
+- `generated/[name].bas.json` — chain-independent schema definition
 
 ### Deploying BAS Schemas
 
@@ -671,7 +679,7 @@ To deploy a schema to the BAS registry on testnet or mainnet, use the `deploy-ba
 
 ```bash
 # Deploy to testnet
-npx hardhat deploy-bas-schema --file generated/Endorsement.bastest.json --network bscTestnet
+npx hardhat deploy-bas-schema --file generated/Endorsement.bas.json --network bscTestnet
 
 # Deploy to mainnet
 npx hardhat deploy-bas-schema --file generated/Endorsement.bas.json --network bsc
@@ -683,8 +691,8 @@ npx hardhat deploy-bas-schema --file generated/Endorsement.bas.json --network bs
 - `--network` (required): Network to deploy to (bsc or bscTestnet)
 
 **Output:**
-- Testnet: `generated/[name].deployed.bastest.json`
-- Mainnet: `generated/[name].deployed.bas.json`
+- `generated/[name].deployed.bastest.json` (testnet)
+- `generated/[name].deployed.bas.json` (mainnet)
 
 The output file contains the schema UID, block number, and network information, which can be used for creating and searching for attestations with this schema.
 

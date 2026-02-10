@@ -1,0 +1,85 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://reputation.omatrust.org/schemas/controller-witness/attestation/1.0.0.json",
+  "title": "Controller Witness",
+  "description": "A witness attestation anchoring that, at observedAt, the controller of the subject DID was asserted via a mutable offchain method. The witness identity is the EAS attester address.",
+  "type": "object",
+  "keywords": [
+    "witness",
+    "controller",
+    "identity",
+    "did",
+    "attestation",
+    "dns",
+    "verification"
+  ],
+  "required": [
+    "attester",
+    "subject",
+    "controller",
+    "method",
+    "observedAt"
+  ],
+  "properties": {
+    "@context": {
+      "type": "string",
+      "description": "Optional JSON-LD context URI for semantic processing.",
+      "default": "https://oma3.org/context.jsonld",
+      "maxLength": 256,
+      "x-oma3-skip-reason": "metadata"
+    },
+    "@type": {
+      "type": "string",
+      "description": "Semantic type identifier, typically 'ControllerWitness'.",
+      "default": "ControllerWitness",
+      "maxLength": 100,
+      "x-oma3-skip-reason": "metadata"
+    },
+    "attester": {
+      "type": "string",
+      "title": "Attester ID",
+      "description": "DID or address of the witness server that observed the controller assertion.",
+      "maxLength": 128,
+      "x-oma3-skip-reason": "eas"
+    },
+    "subject": {
+      "type": "string",
+      "title": "Subject DID",
+      "format": "did",
+      "pattern": "^did:[a-z0-9]+:.+$",
+      "description": "The DID identity (typically did:web) of the entity authorizing the controller.",
+      "maxLength": 256,
+      "x-oma3-did-methods": ["web", "handle"]
+    },
+    "controller": {
+      "type": "string",
+      "title": "Controller DID",
+      "format": "did",
+      "pattern": "^did:[a-z0-9]+:.+$",
+      "description": "The identity of the controller (e.g., did:pkh or did:key for keys, did:handle for usernames).",
+      "maxLength": 256,
+      "x-oma3-did-methods": ["pkh", "key", "handle"]
+    },
+    "method": {
+      "type": "string",
+      "title": "Observation Method",
+      "description": "How the witness observed the controller assertion.",
+      "enum": ["dns-txt", "did-json", "social-profile", "manual"],
+      "x-oma3-enum-descriptions": {
+        "dns-txt": "Controller DID was found in a DNS TXT record (e.g., _omatrust.example.com)",
+        "did-json": "Controller DID was found in /.well-known/did.json",
+        "social-profile": "Controller DID was found in a social media profile (bio, pinned post, etc.)",
+        "manual": "Controller assertion verified manually using a custom mechanism"
+      }
+    },
+    "observedAt": {
+      "type": "integer",
+      "minimum": 0,
+      "title": "Observation Timestamp",
+      "description": "Unix timestamp (seconds) when the witness observed the controller assertion. This is the witness's local observation time, not the blockchain block timestamp.",
+      "x-oma3-subtype": "timestamp",
+      "x-oma3-default": "current-timestamp"
+    }
+  },
+  "additionalProperties": false
+}

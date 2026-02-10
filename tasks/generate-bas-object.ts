@@ -2,9 +2,6 @@ import { task } from "hardhat/config";
 import * as fs from 'fs';
 import * as path from 'path';
 
-import { ZERO_ADDRESS } from "../utils/constants"; // Assuming ZERO_ADDRESS is here
-import { ethers } from 'ethers';
-
 // --- JSON Schema Interfaces (Simplified for our use) ---
 interface JsonSchemaProperty {
   type?: string | string[]; // e.g., "string", "integer", ["string", "null"]
@@ -120,7 +117,6 @@ interface BasSchemaObject {
   name: string;
   schema: string; // The ABI-like schema string for BAS
   revocable: boolean;
-  resolver: string;
 }
 
 // --- Helper Functions ---
@@ -257,9 +253,8 @@ task("generate-bas-object", "Generate a BAS-compatible object from a JSON Schema
   .addParam("schema", "Path to the input JSON Schema file")
   .addOptionalParam("name", "Override BAS object name/output file name. By default, derived from schema's 'title'.")
   .addOptionalParam("revocable", "Set schema revocability (true/false). Default: false.", "false")
-  .addOptionalParam("resolver", "Resolver address for the BAS schema. Default: zero address.", ZERO_ADDRESS)
   .setAction(async (taskArgs, hre) => {
-    const { schema: schemaFilePathArg, name: nameOverride, revocable: revocableArg, resolver: resolverArg } = taskArgs;
+    const { schema: schemaFilePathArg, name: nameOverride, revocable: revocableArg } = taskArgs;
     const schemaFilePath = path.resolve(process.cwd(), schemaFilePathArg);
     const outputDir = path.resolve(process.cwd(), 'generated');
 
@@ -282,6 +277,12 @@ task("generate-bas-object", "Generate a BAS-compatible object from a JSON Schema
 
     const inputSchema: InputJsonSchema = parsedSchemaContent as InputJsonSchema;
 
+    // Check for top-level properties (shared definition files like common.schema.json won't have any)
+    if (!inputSchema.properties || Object.keys(inputSchema.properties).length === 0) {
+      console.error(`Error: Schema at ${schemaFilePath} has no top-level properties. It may be a shared definitions file rather than an attestation schema.`);
+      process.exit(1);
+    }
+
     // Check for title and fail if none exists
     if (!inputSchema.title && !nameOverride) {
       console.error(`Error: Schema at ${schemaFilePath} does not have a title property, and no --name was provided.`);
@@ -302,20 +303,13 @@ task("generate-bas-object", "Generate a BAS-compatible object from a JSON Schema
     // Determine revocable flag
     const revocable = revocableArg.toLowerCase() === 'true';
 
-    // Determine resolver address
-    const resolver = resolverArg ? ethers.getAddress(resolverArg) : ZERO_ADDRESS;
-
     const basSchemaObject: BasSchemaObject = {
       name: basName,
       schema: schemaString,
       revocable,
-      resolver,
     };
 
-    // Determine output filename suffix based on network
-    const networkSuffix = hre.network.name === 'bsc' ? 'bas' : 'bastest';
-
-    const outputFilePath = path.join(outputDir, `${basName}.${networkSuffix}.json`);
+    const outputFilePath = path.join(outputDir, `${basName}.bas.json`);
     fs.writeFileSync(outputFilePath, JSON.stringify(basSchemaObject, null, 2));
     console.log(`Successfully generated BAS object at: ${outputFilePath}`);
     console.log("Generated BAS Object:", JSON.stringify(basSchemaObject, null, 2));

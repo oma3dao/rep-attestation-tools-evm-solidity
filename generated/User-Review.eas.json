@@ -1,6 +1,5 @@
 {
   "name": "User-Review",
   "schema": "string subject, string version, uint256 ratingValue, string reviewBody, string[] screenshotUrls, string[] proofs",
-  "revocable": false,
-  "resolver": "0x0000000000000000000000000000000000000000"
+  "revocable": false
 }

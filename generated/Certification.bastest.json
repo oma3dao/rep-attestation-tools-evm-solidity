@@ -1,6 +1,0 @@
-{
-  "name": "Certification",
-  "schema": "string subject, string subjectOwner, string subjectMetadataURI, string programIdentifier, string programMetadataURI, string anchoredDataURL, string anchoredDataAlgorithm, string anchoredDataHash, string assessor, string assessorMetadataURI, string certificationLevel, string version, string versionHW, uint256 effectiveAt, uint256 expiresAt, uint256 issuedAt, string attestationType",
-  "revocable": false,
-  "resolver": "0x0000000000000000000000000000000000000000"
-}

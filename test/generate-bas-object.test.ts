@@ -45,7 +45,6 @@ describe("generate-bas-object task", function () {
     expect(basObj.schema).to.include("bool boolField");
     expect(basObj.schema).to.include("string[] arrayField");
     expect(basObj.schema).to.include("string optionalField");
-    expect(basObj.resolver).to.equal("0x0000000000000000000000000000000000000000");
   });
 
   it("should handle array types correctly", function () {
@@ -68,7 +67,6 @@ describe("generate-bas-object task", function () {
     expect(fs.existsSync(testOutputFile)).to.be.true;
     const basObj = JSON.parse(fs.readFileSync(testOutputFile, "utf-8"));
     expect(basObj.schema).to.equal("");
-    expect(basObj.resolver).to.equal("0x0000000000000000000000000000000000000000");
   });
 
   it("should fail if schema has no title and no --name is provided", function () {
@@ -87,7 +85,6 @@ describe("generate-bas-object task", function () {
     expect(fs.existsSync(testOutputFile)).to.be.true;
     const basObj = JSON.parse(fs.readFileSync(testOutputFile, "utf-8"));
     expect(basObj.name).to.equal("CustomName");
-    expect(basObj.resolver).to.equal("0x0000000000000000000000000000000000000000");
   });
 
   it("should error if --schema is missing", function () {
@@ -105,7 +102,6 @@ describe("generate-bas-object task", function () {
     expect(fs.existsSync(testOutputFile)).to.be.true;
     const basObj = JSON.parse(fs.readFileSync(testOutputFile, "utf-8"));
     expect(basObj.name).to.equal("CustomName");
-    expect(basObj.resolver).to.equal("0x0000000000000000000000000000000000000000");
   });
 
   it("should use schema title if --name is not provided", function () {
@@ -115,25 +111,14 @@ describe("generate-bas-object task", function () {
     expect(fs.existsSync(testOutputFile)).to.be.true;
     const basObj = JSON.parse(fs.readFileSync(testOutputFile, "utf-8"));
     expect(basObj.name).to.equal("AllTypes");
-    expect(basObj.resolver).to.equal("0x0000000000000000000000000000000000000000");
   });
 
-  it("should set default resolver when not specified", function () {
+  it("should not include resolver in generated output", function () {
     const schemaPath = path.join(schemasDir, "with_resolver.schema.json");
     runTask(`--schema ${schemaPath}`);
     testOutputFile = path.join(generatedDir, "WithResolver.bas.json");
     expect(fs.existsSync(testOutputFile)).to.be.true;
     const basObj = JSON.parse(fs.readFileSync(testOutputFile, "utf-8"));
-    expect(basObj.resolver).to.equal("0x0000000000000000000000000000000000000000");
-  });
-
-  it("should allow setting custom resolver with --resolver", function () {
-    const schemaPath = path.join(schemasDir, "with_resolver.schema.json");
-    const customResolver = "0x0000000000000000000000000000000000000123";
-    runTask(`--schema ${schemaPath} --resolver ${customResolver}`);
-    testOutputFile = path.join(generatedDir, "WithResolver.bas.json");
-    expect(fs.existsSync(testOutputFile)).to.be.true;
-    const basObj = JSON.parse(fs.readFileSync(testOutputFile, "utf-8"));
-    expect(basObj.resolver).to.equal(customResolver);
+    expect(basObj).to.not.have.property("resolver");
   });
 }); 
