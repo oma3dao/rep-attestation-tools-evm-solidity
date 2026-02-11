@@ -4,6 +4,10 @@
   "title": "Linked Identifier",
   "description": "An attestation where the attester (a trusted third party) asserts that the subject controls the linked identifier. Both subject and linkedId MUST be valid DIDs, creating a symmetric DID-to-DID link that attests two identities are owned by the same entity.",
   "type": "object",
+  "x-oma3-witness": {
+    "subjectField": "subject",
+    "controllerField": "linkedId"
+  },
   "required": [
     "attester",
     "subject",
