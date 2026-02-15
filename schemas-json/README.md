@@ -27,11 +27,14 @@ Excludes a field from form generation. Common values:
 }
 ```
 
+**Schemas using this field:** All schemas (@context, @type — metadata); all schemas with attester field (eas); user-review, certification, endorsement, security-assessment (unused — payloadVersion, payloadSpecURI, etc.)
+
 ### `x-oma3-subtype`
 
 Specifies the semantic meaning of a field to control UI rendering and validation. Supported values:
 
 - `"timestamp"` - Unix timestamp in seconds (for `integer` fields). Renders as a datetime picker in UIs.
+- `"semver"` - Semantic version string (for `string` fields with a `^\d+\.\d+\.\d+$` pattern).
 
 **Example:**
 ```json
@@ -45,6 +48,8 @@ Specifies the semantic meaning of a field to control UI rendering and validation
 }
 ```
 
+**Schemas using this field:** All schemas (timestamp fields: issuedAt, effectiveAt, expiresAt); user-review, endorsement, security-assessment (version — semver)
+
 ### `x-oma3-default`
 
 Specifies auto-generation behavior for field defaults. Supported values:
@@ -52,6 +57,8 @@ Specifies auto-generation behavior for field defaults. Supported values:
 - `"current-timestamp"` - Auto-generates Unix timestamp in seconds (for `integer` fields with `x-oma3-subtype: "timestamp"`)
 - `"current-datetime"` - Auto-generates ISO 8601 datetime string (for `string` fields with `format: "date-time"`)
 - `"current-date"` - Auto-generates ISO 8601 date string (for `string` fields with `format: "date"`)
+
+**Schemas using this field:** user-review, linked-identifier, key-binding, certification, endorsement, security-assessment (issuedAt, effectiveAt); user-review-response (issuedAt)
 
 **Example:**
 ```json
@@ -86,6 +93,66 @@ Controls rendering style for object fields (boolean):
 }
 ```
 
+### `x-oma3-did-methods`
+
+Hints which DID methods are recommended for a DID-formatted field. Helps UIs offer appropriate input options and guides implementers on which methods to support.
+
+**Type:** `array` of `string`
+
+**Supported values:** `"web"`, `"pkh"`, `"key"`, `"handle"`
+
+**Common patterns:**
+- Attesters/Issuers: `["web", "pkh", "key"]`
+- Organizations: `["web", "pkh"]`
+- Subjects (general): `["web", "pkh", "key"]`
+- Subjects (with social): `["handle", "web", "pkh", "key"]`
+- Keys: `["key", "pkh", "web"]`
+- Programs/Policies: `["web"]`
+
+**Example:**
+```json
+{
+  "subject": {
+    "type": "string",
+    "title": "Subject ID",
+    "format": "did",
+    "pattern": "^did:[a-z0-9]+:.+$",
+    "maxLength": 256,
+    "x-oma3-did-methods": ["web", "pkh", "key"]
+  }
+}
+```
+
+**Schemas using this field:** user-review, linked-identifier, key-binding, certification, endorsement, security-assessment, user-review-response
+
+> **Note:** This is advisory only — validators should accept any valid DID format regardless of the listed methods.
+
+### `x-oma3-handle-platforms`
+
+When a DID field includes `"handle"` in its `x-oma3-did-methods`, this lists the supported social media platforms for `did:handle` identifiers.
+
+**Type:** `array` of `string`
+
+**Supported values:** `"twitter"`, `"github"`, `"discord"`, `"telegram"`, `"lens"`, `"farcaster"`
+
+**DID format:** `did:handle:<platform>:<username>` (e.g., `did:handle:twitter:alice`)
+
+**Example:**
+```json
+{
+  "subject": {
+    "type": "string",
+    "format": "did",
+    "pattern": "^did:[a-z0-9]+:.+$",
+    "maxLength": 256,
+    "x-oma3-did-methods": ["handle", "web", "pkh", "key"],
+    "x-oma3-handle-platforms": ["twitter", "github", "discord", "telegram", "lens", "farcaster"]
+  }
+}
+```
+
+**Schemas using this field:** linked-identifier, user-review-response
+
 ### `x-oma3-enum`
 
 Provides suggested values for string fields without enforcing strict validation. This allows fields to accept any string value while giving UI tooling hints about recommended/registered values.
@@ -115,6 +182,8 @@ Use this instead of standard JSON Schema `enum` when you want:
 **When to use `x-oma3-enum` vs standard `enum`:**
 - Use `x-oma3-enum` for extensible registries (proof types, verification methods, assessment kinds)
 - Use standard `enum` for fixed, immutable values (hash algorithms like "keccak256" or "sha256")
+
+**Schemas using this field:** key-binding (keyPurpose items), linked-identifier (method), security-assessment (payload.assessmentKind)
 
 ### `x-oma3-witness`
 
