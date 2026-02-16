@@ -1,6 +1,6 @@
 import { task } from "hardhat/config";
 import { NETWORK_CONTRACTS } from "../hardhat.config";
-import { didToIndexAddress } from "../utils/did-utils";
+import { didToAddress } from "@oma3/omatrust/identity";
 import * as fs from "fs";
 import * as path from "path";
 
@@ -99,9 +99,9 @@ task("eas-get-attestation", "Get attestation details by UID or query by DID")
 
     // Mode 2: Query attestations by DID
     if (taskArgs.did) {
-      const indexAddress = didToIndexAddress(taskArgs.did);
+      const didAddress = didToAddress(taskArgs.did);
       console.log(`\nDID: ${taskArgs.did}`);
-      console.log(`Index Address: ${indexAddress}`);
+      console.log(`DID Address: ${didAddress}`);
 
       // Load SchemaRegistry for decoding
       const schemaRegistryAddress = NETWORK_CONTRACTS[networkName]?.easSchemaRegistry;
@@ -126,7 +126,7 @@ task("eas-get-attestation", "Get attestation details by UID or query by DID")
 
       // Filter by recipient address
       const matchingEvents = events.filter((event: any) => {
-        return event.args.recipient.toLowerCase() === indexAddress.toLowerCase();
+        return event.args.recipient.toLowerCase() === didAddress.toLowerCase();
       });
 
       if (matchingEvents.length === 0) {
