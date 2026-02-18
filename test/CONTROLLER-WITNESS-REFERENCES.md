@@ -1,6 +1,6 @@
 # Controller Witness – References (Test Branch)
 
-This branch (`test/repository`) is for repository-wide tests. It includes controller-witness attestation schema and related tooling. Below are the files in **this repo** and pointers to external docs.
+This branch (`test/full-suite`) is for repository-wide tests. It includes controller-witness attestation schema and related tooling. Below are the files in **this repo** and pointers to external docs.
 
 ## In This Repo (rep-attestation-tools-evm-solidity)
 

@@ -1,0 +1,19 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "CoverageBranchesEas",
+  "description": "Schema to cover EAS generator branches: array items type [null] (default), array items type [] (fallback)",
+  "type": "object",
+  "properties": {
+    "arrayItemsNull": {
+      "type": "array",
+      "items": { "type": ["null"] },
+      "description": "Array items type [null] to cover default case in items switch"
+    },
+    "arrayItemsEmptyType": {
+      "type": "array",
+      "items": { "type": [] },
+      "description": "Array items with empty type array to cover resolveJsonType fallback and else branch"
+    }
+  },
+  "required": ["arrayItemsNull"]
+}

@@ -1,0 +1,28 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "CoverageBranchesBas",
+  "description": "Schema to cover BAS generator branches: array items type [string,null], array of objects, scalar null (unsupported)",
+  "type": "object",
+  "properties": {
+    "nullableStringArray": {
+      "type": "array",
+      "items": { "type": ["string", "null"] },
+      "description": "Array with items type as array to cover Array.isArray(resolvedItems.type)"
+    },
+    "objectArray": {
+      "type": "array",
+      "items": { "type": "object" },
+      "description": "Array of objects to cover case 'object' in items switch"
+    },
+    "unsupportedScalar": {
+      "type": "null",
+      "description": "Unsupported scalar type to cover default in scalar switch"
+    },
+    "arrayItemsNull": {
+      "type": "array",
+      "items": { "type": ["null"] },
+      "description": "Array items type [null] to cover default case in items switch"
+    }
+  },
+  "required": ["nullableStringArray", "objectArray"]
+}

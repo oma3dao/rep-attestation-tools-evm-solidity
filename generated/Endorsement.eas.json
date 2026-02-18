@@ -1,5 +1,0 @@
-{
-  "name": "Endorsement",
-  "schema": "string subject, string organization, string version, string policyURI, string payload, string payloadVersion, string payloadSpecURI, string payloadSpecDigest, uint256 issuedAt, uint256 effectiveAt, uint256 expiresAt",
-  "revocable": false
-}

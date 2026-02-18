@@ -1,0 +1,14 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "UnusedOnly",
+  "description": "Single property with x-oma3-skip-reason unused to cover unused log branch",
+  "type": "object",
+  "properties": {
+    "reserved": {
+      "type": "string",
+      "x-oma3-skip-reason": "unused",
+      "description": "Reserved field"
+    }
+  },
+  "required": ["reserved"]
+}

@@ -1,0 +1,15 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://example.com/revocable_detected.schema.json",
+  "title": "RevocableDetected",
+  "type": "object",
+  "properties": {
+    "subject": { "type": "string" },
+    "revoked": {
+      "type": "boolean",
+      "description": "EAS handles revocation natively.",
+      "x-oma3-skip-reason": "eas"
+    }
+  },
+  "required": ["subject"]
+}
