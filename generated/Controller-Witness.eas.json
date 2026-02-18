@@ -1,5 +1,0 @@
-{
-  "name": "Controller-Witness",
-  "schema": "string subject, string controller, string method, uint256 observedAt",
-  "revocable": false
-}

@@ -1,0 +1,5 @@
+{
+  "name": "Sample",
+  "schema": "string subject, uint256 value",
+  "revocable": true
+}

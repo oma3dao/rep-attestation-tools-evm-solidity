@@ -1,0 +1,19 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "ConditionalBranchesEas",
+  "description": "Schema to cover collectTypesFromBranches: oneOf/anyOf with then.properties and else.properties",
+  "type": "object",
+  "properties": {
+    "conditionalField": {
+      "oneOf": [
+        { "type": "string" },
+        {
+          "then": { "properties": { "p": { "type": "string" } } },
+          "else": { "properties": { "q": { "type": "integer" } } }
+        }
+      ],
+      "description": "Conditional to cover then/else in collectTypesFromBranches"
+    }
+  },
+  "required": ["conditionalField"]
+}

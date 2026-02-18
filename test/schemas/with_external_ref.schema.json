@@ -1,0 +1,9 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "WithExternalRef",
+  "type": "object",
+  "properties": {
+    "refField": { "$ref": "external_ref_target.schema.json#/definitions/Foo" }
+  },
+  "required": ["refField"]
+}
