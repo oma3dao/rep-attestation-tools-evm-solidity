@@ -5,25 +5,13 @@ import { SchemaRegistry } from "@ethereum-attestation-service/eas-sdk";
 import { EAS_SCHEMA_REGISTRY_ADDRESSES } from "../hardhat.config";
 import { getProviderAndSigner } from "../utils/provider";
 import { ZERO_ADDRESS } from "../utils/constants";
-import { calculateSchemaUID, verifySchemaExists, formatSchemaUID, getSchemaDetails } from "../utils/easTools";
+import { calculateSchemaUID, verifySchemaExists, formatSchemaUID } from "../utils/easTools";
 
 interface EasSchemaObject {
   name: string;
   schema: string;
   revocable: boolean;
   resolver?: string; // Optional; resolver is typically passed via CLI at deploy time
-}
-
-function getTxHash(tx: any): string {
-  if (typeof tx === "string") return tx;
-  if (tx && typeof tx.hash === "string") return tx.hash;
-  if (tx && typeof tx.transactionHash === "string") return tx.transactionHash;
-  
-  // Additional checks for common transaction patterns
-  if (tx && tx.tx && typeof tx.tx === "string") return tx.tx;
-  if (tx && tx.id && typeof tx.id === "string") return tx.id;
-  
-  throw new Error("Could not extract transaction hash from tx object");
 }
 
 task("deploy-eas-schema", "Deploy an EAS schema from a .eas.json file")
@@ -58,7 +46,7 @@ task("deploy-eas-schema", "Deploy an EAS schema from a .eas.json file")
     }
 
     // Use the utility to get provider and signer
-    const { signer, provider } = await getProviderAndSigner(hre);
+    const { signer } = await getProviderAndSigner(hre);
 
     // Connect to SchemaRegistry
     const schemaRegistry = new SchemaRegistry(schemaRegistryAddress);
@@ -97,56 +85,36 @@ task("deploy-eas-schema", "Deploy an EAS schema from a .eas.json file")
       
       console.log("Transaction sent. Waiting for confirmation...");
       
-      // Handle transaction differently based on its type
       let txHash: string = '';
       let receipt: any;
       let confirmedSchemaUID: string | null = null;
       
       try {
-        // Extract transaction hash from EAS transaction response
-        if (typeof tx === 'object' && tx !== null && (tx as any).tx && (tx as any).tx.hash) {
-          txHash = (tx as any).tx.hash;
-        } else {
-          txHash = getTxHash(tx);
-        }
-        console.log(`Transaction hash: ${txHash}`);
+        // EAS SDK v2.x: register() returns a Transaction<T> that hasn't been sent yet.
+        // wait() sends the tx, waits for confirmation, and returns the schema UID.
+        const waitResult = await (tx as any).wait();
+        receipt = (tx as any).receipt;
         
-        // Wait for transaction confirmation
-        try {
-          receipt = await (tx as any).tx.wait();
-          console.log(`Transaction confirmed in block ${receipt?.blockNumber || 'unknown'}`);
-        } catch (error) {
-          receipt = await provider.getTransactionReceipt(txHash);
-          if (receipt) {
-            console.log(`Transaction confirmed in block ${receipt.blockNumber}`);
-          }
+        // v2.x wait() returns the schema UID string
+        if (typeof waitResult === 'string') {
+          confirmedSchemaUID = waitResult;
         }
         
-        // Extract schema UID from receipt logs
-        if (receipt && receipt.logs && receipt.logs.length > 0 && receipt.logs[0].topics && receipt.logs[0].topics.length > 1) {
-          // The schema UID is in the second topic (index 1)
-          const schemaUID = receipt.logs[0].topics[1];
-          
-          // Use this UID directly from the contract
-          expectedSchemaUID = schemaUID;
-          confirmedSchemaUID = schemaUID;
-        } else {
-          console.log("\nCould not find Schema UID in transaction logs");
+        // Extract tx hash from the receipt (available after wait())
+        if (receipt?.hash) {
+          txHash = receipt.hash;
+        } else if (receipt?.transactionHash) {
+          txHash = receipt.transactionHash;
         }
+        
+        console.log(`Transaction hash: ${txHash || 'unknown'}`);
+        console.log(`Transaction confirmed in block ${receipt?.blockNumber || 'unknown'}`);
       } catch (error) {
-        console.log("Error handling transaction:", error);
+        console.log("Error during transaction:", error);
       }
       
-      // Wait for the blockchain to index the new schema and verify
+      // Verify the schema was indexed
       const verificationUID = confirmedSchemaUID || expectedSchemaUID;
-      
-      // Note if we're using the actual UID from transaction logs or our estimate
-      if (confirmedSchemaUID) {
-        console.log(`\nUsing schema UID extracted from transaction: ${formatSchemaUID(verificationUID)}`);
-      } else {
-        console.log(`\nUsing estimated schema UID: ${formatSchemaUID(verificationUID)}`);
-      }
-      
       console.log(`Waiting ${waitTime} seconds for schema to be indexed...`);
       
       // Wait for the indexing time
