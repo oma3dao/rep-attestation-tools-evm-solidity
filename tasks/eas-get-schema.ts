@@ -22,9 +22,17 @@ task("eas-get-schema", "Get schema details by UID")
 
     const schema = await schemaRegistry.getSchema(taskArgs.uid);
 
+    // Check if schema exists (contract returns zeroed struct for non-existent UIDs)
+    const ZERO_BYTES32 = "0x0000000000000000000000000000000000000000000000000000000000000000";
+    if (!schema.uid || schema.uid === ZERO_BYTES32) {
+      console.log(`\n❌ Schema not found: ${taskArgs.uid}`);
+      console.log(`The schema has not been registered on ${hre.network.name}.`);
+      process.exit(1);
+    }
+
     console.log(`\n📋 Schema Details:`);
     console.log(`UID: ${taskArgs.uid}`);
-    console.log(`Schema: ${schema.schema}`);
+    console.log(`Schema: ${schema.schema || "(empty)"}`);
     console.log(`Resolver: ${schema.resolver}`);
     console.log(`Revocable: ${schema.revocable}`);
     console.log(`Index: ${schema.index}`);
