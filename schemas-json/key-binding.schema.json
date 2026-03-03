@@ -82,7 +82,7 @@
     "keyPurpose": {
       "type": "array",
       "title": "Key Purpose",
-      "description": "Permitted W3C DID Core verification relationships for this key.",
+      "description": "Permitted W3C DID Core verification relationships for this key. A key should not be used for both signing and encryption — use separate keys for each purpose.",
       "items": {
         "type": "string",
         "minLength": 1,
@@ -91,13 +91,18 @@
         "x-oma3-enum": [
           {
             "value": "authentication",
-            "label": "Login / Identity Proof",
-            "description": "This key can prove control of the DID"
+            "label": "Shared Control",
+            "description": "Authorize transactions, authenticate to dApps, and act on behalf of the DID"
           },
           {
             "value": "assertionMethod",
-            "label": "Sign Attestations",
-            "description": "This key can sign statements on behalf of the DID"
+            "label": "Signatures",
+            "description": "Sign attestations, verifiable credentials, and other structured data"
+          },
+          {
+            "value": "keyAgreement",
+            "label": "Encryption",
+            "description": "Establish encrypted channels and perform key exchange (ECDH). Do not combine with signing purposes."
           }
         ]
       },
