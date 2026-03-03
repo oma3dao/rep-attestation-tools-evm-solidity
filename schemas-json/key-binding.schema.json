@@ -82,18 +82,23 @@
     "keyPurpose": {
       "type": "array",
       "title": "Key Purpose",
-      "description": "Permitted purposes for this key (e.g., 'authentication', 'assertionMethod', 'keyAgreement', 'capabilityInvocation', 'capabilityDelegation').",
+      "description": "Permitted W3C DID Core verification relationships for this key.",
       "items": {
         "type": "string",
         "minLength": 1,
         "maxLength": 64,
         "pattern": "^[a-zA-Z0-9\\-\\.]+$",
         "x-oma3-enum": [
-          "authentication",
-          "assertionMethod",
-          "keyAgreement",
-          "capabilityInvocation",
-          "capabilityDelegation"
+          {
+            "value": "authentication",
+            "label": "Login / Identity Proof",
+            "description": "This key can prove control of the DID"
+          },
+          {
+            "value": "assertionMethod",
+            "label": "Sign Attestations",
+            "description": "This key can sign statements on behalf of the DID"
+          }
         ]
       },
       "minItems": 1,
