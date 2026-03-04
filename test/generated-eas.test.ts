@@ -87,12 +87,12 @@ describe("generated EAS files", function () {
     });
   });
 
-  describe("Controller-Witness.eas.json", function () {
-    const FILE = "Controller-Witness.eas.json";
+  describe("_test-Controller-Witness.eas.json (test-generated)", function () {
+    const FILE = "_test-Controller-Witness.eas.json";
 
-    it("should have name Controller-Witness", function () {
+    it("should have name _test-Controller-Witness", function () {
       const eas = loadEas(FILE);
-      expect(eas.name).to.equal("Controller-Witness");
+      expect(eas.name).to.equal("_test-Controller-Witness");
     });
 
     it("schema string should include subject, controller, method, observedAt", function () {
@@ -109,8 +109,8 @@ describe("generated EAS files", function () {
     });
   });
 
-  describe("Key-Binding.eas.json (witness subject/controller fields)", function () {
-    const FILE = "Key-Binding.eas.json";
+  describe("_test-Key-Binding.eas.json (witness subject/controller fields)", function () {
+    const FILE = "_test-Key-Binding.eas.json";
 
     it("schema string should include subject and keyId (controller field for witness)", function () {
       const eas = loadEas(FILE);
@@ -119,8 +119,8 @@ describe("generated EAS files", function () {
     });
   });
 
-  describe("Linked-Identifier.eas.json (witness subject/controller fields)", function () {
-    const FILE = "Linked-Identifier.eas.json";
+  describe("_test-Linked-Identifier.eas.json (witness subject/controller fields)", function () {
+    const FILE = "_test-Linked-Identifier.eas.json";
 
     it("schema string should include subject and linkedId (controller field for witness)", function () {
       const eas = loadEas(FILE);
