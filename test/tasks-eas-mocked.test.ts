@@ -28,6 +28,14 @@ describe("EAS/BAS tasks (mocked registry and provider)", function () {
   let basDeployedFile: string | null = null;
 
   before(function () {
+    // Clean up any leftover test artifacts from a previous crashed run
+    const generatedDir = path.join(__dirname, "..", "generated");
+    if (fs.existsSync(generatedDir)) {
+      const leftover = fs.readdirSync(generatedDir).filter(f => f.startsWith('_test-'));
+      for (const f of leftover) {
+        fs.unlinkSync(path.join(generatedDir, f));
+      }
+    }
     originalGetProviderAndSigner = providerModule.getProviderAndSigner;
     originalGetDeployerSigner = signerUtilsModule.getDeployerSigner;
     originalEasConnect = easSdk.SchemaRegistry?.prototype?.connect;
@@ -321,7 +329,12 @@ describe("EAS/BAS tasks (mocked registry and provider)", function () {
       };
       // register not called when schema already exists
       easSdk.SchemaRegistry.prototype.register = async function () {
-        return { tx: { hash: "0xabc", wait: async () => ({ blockNumber: 1, logs: [] }) } };
+        const txObj: any = { hash: "0xabc", receipt: null };
+        txObj.wait = async function () {
+          this.receipt = { hash: this.hash, blockNumber: 1 };
+          return "0x" + "a".repeat(64);
+        };
+        return txObj;
       };
 
       const file = path.join("generated", "Controller-Witness.eas.json");
@@ -350,16 +363,12 @@ describe("EAS/BAS tasks (mocked registry and provider)", function () {
         };
       };
       easSdk.SchemaRegistry.prototype.register = async function () {
-        return {
-          tx: {
-            hash: "0x" + "e".repeat(64),
-            wait: async () => ({
-              blockNumber: 42,
-              status: 1,
-              logs: [{ topics: ["0x0", schemaUidFromLog] }],
-            }),
-          },
+        const txObj: any = { hash: "0x" + "e".repeat(64), receipt: null };
+        txObj.wait = async function () {
+          this.receipt = { hash: this.hash, blockNumber: 42, transactionHash: this.hash };
+          return schemaUidFromLog;
         };
+        return txObj;
       };
       const file = path.join("test", "fixtures", "DeployOnly.eastest.json");
       const result = await run("deploy-eas-schema", { file, wait: "0" });
@@ -400,54 +409,34 @@ describe("EAS/BAS tasks (mocked registry and provider)", function () {
       }
     });
 
-    it("should use provider.getTransactionReceipt when tx.wait() throws", async function () {
-      const hre = require("hardhat");
-      (hre.network as any).name = "omachainTestnet";
-      const schemaUidFromLog = "0x" + "d".repeat(64);
-      const receiptBlockNumber = 43;
-      const mockProvider = {
-        getTransactionReceipt: async () => ({
-          blockNumber: receiptBlockNumber,
-          status: 1,
-          logs: [{ topics: ["0x0", schemaUidFromLog] }],
-        }),
-      };
-      providerModule.getProviderAndSigner = async () => ({ provider: mockProvider, signer: {} });
+    it("should use estimated UID when tx.wait() throws (EAS SDK v2.x has no getTransactionReceipt fallback)", async function () {
+      (require("hardhat").network as any).name = "omachainTestnet";
+      const expectedUID = "0xa3691f973db15364429c2630005260699e17c1353c6a88b8893f5362a97c49d6";
+      providerModule.getProviderAndSigner = async () => ({ provider: {}, signer: {} });
       easSdk.SchemaRegistry.prototype.connect = async function () {};
       let getSchemaCallCount = 0;
       easSdk.SchemaRegistry.prototype.getSchema = async function () {
         getSchemaCallCount++;
-        if (getSchemaCallCount <= 1) return { uid: hre.ethers.ZeroHash, schema: "", resolver: "0x0", revocable: false };
+        if (getSchemaCallCount <= 1) return { uid: require("hardhat").ethers.ZeroHash, schema: "", resolver: "0x0", revocable: false };
         return {
-          uid: schemaUidFromLog,
+          uid: expectedUID,
           schema: "string subject, string controller",
           resolver: "0x0000000000000000000000000000000000000000",
           revocable: false,
         };
       };
       easSdk.SchemaRegistry.prototype.register = async function () {
-        return {
-          tx: {
-            hash: "0x" + "e".repeat(64),
-            wait: async () => {
-              throw new Error("wait failed");
-            },
-          },
+        const txObj: any = { hash: "0x" + "e".repeat(64), receipt: null };
+        txObj.wait = async () => {
+          throw new Error("wait failed");
         };
+        return txObj;
       };
-      const logCalls: string[] = [];
-      const origLog = console.log;
-      console.log = (...args: unknown[]) => logCalls.push(args.map(String).join(" "));
-      try {
-        const file = path.join("test", "fixtures", "DeployOnly.eastest.json");
-        const result = await run("deploy-eas-schema", { file, wait: "0" });
-        expect(result).to.equal(schemaUidFromLog);
-        expect(logCalls.some((m) => m.includes("Transaction confirmed in block") && m.includes(String(receiptBlockNumber)))).to.be.true;
-        const deployedPath = path.join("test", "fixtures", "DeployOnly.deployed.eastest.json");
-        if (fs.existsSync(deployedPath)) easDeployedFile = deployedPath;
-      } finally {
-        console.log = origLog;
-      }
+      const file = path.join("test", "fixtures", "DeployOnly.eastest.json");
+      const result = await run("deploy-eas-schema", { file, wait: "0" });
+      expect(result).to.equal(expectedUID);
+      const deployedPath = path.join("test", "fixtures", "DeployOnly.deployed.eastest.json");
+      if (fs.existsSync(deployedPath)) easDeployedFile = deployedPath;
     });
 
     it("should hit success block with receipt null when getTransactionReceipt returns null but verify succeeds (EAS)", async function () {
@@ -469,14 +458,11 @@ describe("EAS/BAS tasks (mocked registry and provider)", function () {
         };
       };
       easSdk.SchemaRegistry.prototype.register = async function () {
-        return {
-          tx: {
-            hash: "0x" + "e".repeat(64),
-            wait: async () => {
-              throw new Error("wait failed");
-            },
-          },
+        const txObj: any = { hash: "0x" + "e".repeat(64), receipt: null };
+        txObj.wait = async () => {
+          throw new Error("wait failed");
         };
+        return txObj;
       };
       const logCalls: string[] = [];
       const origLog = console.log;
@@ -508,17 +494,14 @@ describe("EAS/BAS tasks (mocked registry and provider)", function () {
           revocable: false,
         };
       };
+      const estimatedUID = "0xa3691f973db15364429c2630005260699e17c1353c6a88b8893f5362a97c49d6";
       easSdk.SchemaRegistry.prototype.register = async function () {
-        return {
-          tx: {
-            hash: "0x" + "e".repeat(64),
-            wait: async () => ({
-              blockNumber: waitBlockNumber,
-              status: 1,
-              logs: [],
-            }),
-          },
+        const txObj: any = { hash: "0x" + "e".repeat(64), receipt: null };
+        txObj.wait = async function () {
+          this.receipt = { hash: this.hash, blockNumber: waitBlockNumber, transactionHash: this.hash };
+          return estimatedUID;
         };
+        return txObj;
       };
       const logCalls: string[] = [];
       const origLog = console.log;
@@ -526,7 +509,7 @@ describe("EAS/BAS tasks (mocked registry and provider)", function () {
       try {
         const file = path.join("test", "fixtures", "DeployOnly.eastest.json");
         const result = await run("deploy-eas-schema", { file, wait: "0" });
-        expect(result).to.match(/^0x[a-fA-F0-9]{64}$/);
+        expect(result).to.equal(estimatedUID);
         expect(logCalls.some((m) => m.includes("Transaction confirmed in block") && m.includes(String(waitBlockNumber)))).to.be.true;
         const deployedPath = path.join("test", "fixtures", "DeployOnly.deployed.eastest.json");
         if (fs.existsSync(deployedPath)) easDeployedFile = deployedPath;
@@ -547,15 +530,12 @@ describe("EAS/BAS tasks (mocked registry and provider)", function () {
         return { uid: schemaUidFromLog, schema: "string subject, string controller", resolver: "0x0000000000000000000000000000000000000000", revocable: false };
       };
       easSdk.SchemaRegistry.prototype.register = async function () {
-        return {
-          tx: {
-            hash: "0x" + "e".repeat(64),
-            wait: async () => ({
-              status: 1,
-              logs: [{ topics: ["0x0", schemaUidFromLog] }],
-            }),
-          },
+        const txObj: any = { hash: "0x" + "e".repeat(64), receipt: null };
+        txObj.wait = async function () {
+          this.receipt = {}; // no blockNumber
+          return schemaUidFromLog;
         };
+        return txObj;
       };
       const logCalls: string[] = [];
       const origLog = console.log;
@@ -584,16 +564,12 @@ describe("EAS/BAS tasks (mocked registry and provider)", function () {
         return { uid: schemaUidFromLog, schema: "string subject, string controller", resolver: "0x0000000000000000000000000000000000000000", revocable: false };
       };
       easSdk.SchemaRegistry.prototype.register = async function () {
-        return {
-          tx: {
-            hash: txHash,
-            wait: async () => ({
-              blockNumber: 42,
-              status: 1,
-              logs: [{ topics: ["0x0", schemaUidFromLog] }],
-            }),
-          },
+        const txObj: any = { hash: txHash, receipt: null };
+        txObj.wait = async function () {
+          this.receipt = { hash: this.hash, blockNumber: 42, transactionHash: this.hash };
+          return schemaUidFromLog;
         };
+        return txObj;
       };
       const file = path.join("test", "fixtures", "DeployOnly.eastest.json");
       const result = await run("deploy-eas-schema", { file, wait: "0" });
@@ -641,16 +617,12 @@ describe("EAS/BAS tasks (mocked registry and provider)", function () {
         return { uid: require("hardhat").ethers.ZeroHash, schema: "", resolver: "0x0", revocable: false };
       };
       easSdk.SchemaRegistry.prototype.register = async function () {
-        return {
-          tx: {
-            hash: "0x" + "e".repeat(64),
-            wait: async () => ({
-              blockNumber: 45,
-              status: 0,
-              logs: [{ topics: ["0x0", "0x" + "d".repeat(64)] }],
-            }),
-          },
+        const txObj: any = { hash: "0x" + "e".repeat(64), receipt: null };
+        txObj.wait = async function () {
+          this.receipt = { blockNumber: 45, status: 0 };
+          return null;
         };
+        return txObj;
       };
       const origExit = process.exit;
       (process as any).exit = function (code: number) {
@@ -674,16 +646,12 @@ describe("EAS/BAS tasks (mocked registry and provider)", function () {
         return { uid: require("hardhat").ethers.ZeroHash, schema: "", resolver: "0x0", revocable: false };
       };
       easSdk.SchemaRegistry.prototype.register = async function () {
-        return {
-          tx: {
-            hash: "0x" + "e".repeat(64),
-            wait: async () => ({
-              blockNumber: 46,
-              status: 1,
-              logs: [{ topics: ["0x0", "0x" + "d".repeat(64)] }],
-            }),
-          },
+        const txObj: any = { hash: "0x" + "e".repeat(64), receipt: null };
+        txObj.wait = async function () {
+          this.receipt = { blockNumber: 46, status: 1 };
+          return null;
         };
+        return txObj;
       };
       const origExit = process.exit;
       (process as any).exit = function (code: number) {
@@ -707,16 +675,12 @@ describe("EAS/BAS tasks (mocked registry and provider)", function () {
         return { uid: require("hardhat").ethers.ZeroHash, schema: "", resolver: "0x0", revocable: false };
       };
       easSdk.SchemaRegistry.prototype.register = async function () {
-        return {
-          tx: {
-            hash: "0x" + "e".repeat(64),
-            wait: async () => ({
-              blockNumber: 46,
-              status: 0,
-              logs: [],
-            }),
-          },
+        const txObj: any = { hash: "0x" + "e".repeat(64), receipt: null };
+        txObj.wait = async function () {
+          this.receipt = { blockNumber: 46, status: 0 };
+          return null;
         };
+        return txObj;
       };
       const origExit = process.exit;
       (process as any).exit = function (code: number) {
@@ -732,102 +696,37 @@ describe("EAS/BAS tasks (mocked registry and provider)", function () {
       }
     });
 
-    it("should use getTxHash when register returns tx without .tx.hash", async function () {
-      const hre = require("hardhat");
-      (hre.network as any).name = "omachainTestnet";
-      const schemaUidFromLog = "0x" + "d".repeat(64);
-      const txHash = "0x" + "e".repeat(64);
-      const mockProvider = {
-        getTransactionReceipt: async () => ({
-          blockNumber: 47,
-          status: 1,
-          logs: [{ topics: ["0x0", schemaUidFromLog] }],
-        }),
-      };
-      providerModule.getProviderAndSigner = async () => ({ provider: mockProvider, signer: {} });
+    it("should use estimated UID when tx.wait() throws but verification succeeds", async function () {
+      (require("hardhat").network as any).name = "omachainTestnet";
+      const expectedUID = "0xa3691f973db15364429c2630005260699e17c1353c6a88b8893f5362a97c49d6";
+      providerModule.getProviderAndSigner = async () => ({ provider: {}, signer: {} });
       easSdk.SchemaRegistry.prototype.connect = async function () {};
       let getSchemaCallCount = 0;
       easSdk.SchemaRegistry.prototype.getSchema = async function () {
         getSchemaCallCount++;
-        if (getSchemaCallCount <= 1) return { uid: hre.ethers.ZeroHash, schema: "", resolver: "0x0", revocable: false };
+        if (getSchemaCallCount <= 1) return { uid: require("hardhat").ethers.ZeroHash, schema: "", resolver: "0x0", revocable: false };
         return {
-          uid: schemaUidFromLog,
+          uid: expectedUID,
           schema: "string subject, string controller",
           resolver: "0x0000000000000000000000000000000000000000",
           revocable: false,
         };
       };
       easSdk.SchemaRegistry.prototype.register = async function () {
-        return {
-          hash: txHash,
-          wait: async () => {
-            throw new Error("no tx.wait");
-          },
+        const txObj: any = { hash: "0x" + "e".repeat(64), receipt: null };
+        txObj.wait = async () => {
+          throw new Error("no tx.wait");
         };
+        return txObj;
       };
       const file = path.join("test", "fixtures", "DeployOnly.eastest.json");
       const result = await run("deploy-eas-schema", { file, wait: "0" });
-      expect(result).to.equal(schemaUidFromLog);
+      expect(result).to.equal(expectedUID);
       const deployedPath = path.join("test", "fixtures", "DeployOnly.deployed.eastest.json");
       if (fs.existsSync(deployedPath)) easDeployedFile = deployedPath;
     });
 
-    async function runDeployEasWithRegisterReturn(registerReturn: any, schemaUidFromLog: string, txHash: string) {
-      const mockProvider = {
-        getTransactionReceipt: async () => ({
-          blockNumber: 48,
-          status: 1,
-          logs: [{ topics: ["0x0", schemaUidFromLog] }],
-        }),
-      };
-      providerModule.getProviderAndSigner = async () => ({ provider: mockProvider, signer: {} });
-      easSdk.SchemaRegistry.prototype.connect = async function () {};
-      let getSchemaCallCount = 0;
-      easSdk.SchemaRegistry.prototype.getSchema = async function () {
-        getSchemaCallCount++;
-        if (getSchemaCallCount <= 1) return { uid: require("hardhat").ethers.ZeroHash, schema: "", resolver: "0x0", revocable: false };
-        return { uid: schemaUidFromLog, schema: "string subject", resolver: "0x0000000000000000000000000000000000000000", revocable: false };
-      };
-      easSdk.SchemaRegistry.prototype.register = async function () {
-        return registerReturn;
-      };
-      const file = path.join("test", "fixtures", "DeployOnly.eastest.json");
-      return run("deploy-eas-schema", { file, wait: "0" });
-    }
-
-    it("should use getTxHash when register returns hash as string", async function () {
-      (require("hardhat").network as any).name = "omachainTestnet";
-      const schemaUidFromLog = "0x" + "d".repeat(64);
-      const txHash = "0x" + "e".repeat(64);
-      const result = await runDeployEasWithRegisterReturn(txHash, schemaUidFromLog, txHash);
-      expect(result).to.equal(schemaUidFromLog);
-    });
-
-    it("should use getTxHash when register returns { transactionHash }", async function () {
-      (require("hardhat").network as any).name = "omachainTestnet";
-      const schemaUidFromLog = "0x" + "d".repeat(64);
-      const txHash = "0x" + "e".repeat(64);
-      const result = await runDeployEasWithRegisterReturn({ transactionHash: txHash }, schemaUidFromLog, txHash);
-      expect(result).to.equal(schemaUidFromLog);
-    });
-
-    it("should use getTxHash when register returns { tx: string }", async function () {
-      (require("hardhat").network as any).name = "omachainTestnet";
-      const schemaUidFromLog = "0x" + "d".repeat(64);
-      const txHash = "0x" + "e".repeat(64);
-      const result = await runDeployEasWithRegisterReturn({ tx: txHash }, schemaUidFromLog, txHash);
-      expect(result).to.equal(schemaUidFromLog);
-    });
-
-    it("should use getTxHash when register returns { id: string }", async function () {
-      (require("hardhat").network as any).name = "omachainTestnet";
-      const schemaUidFromLog = "0x" + "d".repeat(64);
-      const txHash = "0x" + "e".repeat(64);
-      const result = await runDeployEasWithRegisterReturn({ id: txHash }, schemaUidFromLog, txHash);
-      expect(result).to.equal(schemaUidFromLog);
-    });
-
-    it("should log error when getTxHash throws (malformed register response)", async function () {
+    it("should exit when transaction wait fails and schema verification fails", async function () {
       (require("hardhat").network as any).name = "omachainTestnet";
       providerModule.getProviderAndSigner = async () => ({ provider: {}, signer: {} });
       easSdk.SchemaRegistry.prototype.connect = async function () {};

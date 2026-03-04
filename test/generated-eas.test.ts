@@ -9,16 +9,16 @@ import * as path from "path";
 import { runHardhatTask } from "./helpers/runHardhatTask";
 
 const GENERATED_DIR = path.join(__dirname, "..", "generated");
-const REQUIRED_EAS_FILES = ["Controller-Witness.eas.json", "Key-Binding.eas.json", "Linked-Identifier.eas.json"];
+const REQUIRED_EAS_FILES = ["_test-Controller-Witness.eas.json", "_test-Key-Binding.eas.json", "_test-Linked-Identifier.eas.json"];
 const SCHEMAS_TO_GENERATE: [string, string][] = [
-  ["schemas-json/controller-witness.schema.json", "Controller-Witness.eas.json"],
-  ["schemas-json/key-binding.schema.json", "Key-Binding.eas.json"],
-  ["schemas-json/linked-identifier.schema.json", "Linked-Identifier.eas.json"],
+  ["schemas-json/controller-witness.schema.json", "_test-Controller-Witness"],
+  ["schemas-json/key-binding.schema.json", "_test-Key-Binding"],
+  ["schemas-json/linked-identifier.schema.json", "_test-Linked-Identifier"],
 ];
 
 function listEasFiles(): string[] {
   if (!fs.existsSync(GENERATED_DIR)) return [];
-  return fs.readdirSync(GENERATED_DIR).filter((f) => f.endsWith(".eas.json") && !f.includes(".deployed."));
+  return fs.readdirSync(GENERATED_DIR).filter((f) => f.endsWith(".eas.json") && !f.includes(".deployed.") && !f.startsWith("_test-"));
 }
 
 function loadEas(filename: string): { name: string; schema: string; revocable: boolean } {
@@ -32,14 +32,31 @@ function ensureGeneratedEasFiles(): void {
   const missing = REQUIRED_EAS_FILES.filter((f) => !fs.existsSync(path.join(GENERATED_DIR, f)));
   if (missing.length === 0) return;
   if (!fs.existsSync(GENERATED_DIR)) fs.mkdirSync(GENERATED_DIR, { recursive: true });
-  for (const [schemaPath, _outFile] of SCHEMAS_TO_GENERATE) {
-    runHardhatTask("generate-eas-object", `--schema ${schemaPath}`);
+  for (const [schemaPath, name] of SCHEMAS_TO_GENERATE) {
+    runHardhatTask("generate-eas-object", `--schema ${schemaPath} --name ${name}`);
   }
 }
 
 describe("generated EAS files", function () {
   before(function () {
+    // Clean up any leftover test artifacts from a previous crashed run
+    if (fs.existsSync(GENERATED_DIR)) {
+      const leftover = fs.readdirSync(GENERATED_DIR).filter(f => f.startsWith('_test-'));
+      for (const f of leftover) {
+        fs.unlinkSync(path.join(GENERATED_DIR, f));
+      }
+    }
     ensureGeneratedEasFiles();
+  });
+
+  after(function () {
+    // Clean up test-generated files
+    if (fs.existsSync(GENERATED_DIR)) {
+      const testFiles = fs.readdirSync(GENERATED_DIR).filter(f => f.startsWith('_test-'));
+      for (const f of testFiles) {
+        fs.unlinkSync(path.join(GENERATED_DIR, f));
+      }
+    }
   });
 
   describe("all .eas.json files (non-deployed)", function () {

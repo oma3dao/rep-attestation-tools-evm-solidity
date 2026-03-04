@@ -1,0 +1,5 @@
+{
+  "name": "User-Review-Response",
+  "schema": "string subject, string refUID, string responseBody",
+  "revocable": false
+}

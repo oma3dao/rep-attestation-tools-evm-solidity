@@ -16,6 +16,13 @@ describe("generate-eas-object task", function () {
   let testOutputFile: string | null = null;
 
   before(() => {
+    // Clean up any leftover test artifacts from a previous crashed run
+    if (fs.existsSync(generatedDir)) {
+      const leftover = fs.readdirSync(generatedDir).filter(f => f.startsWith('_test-'));
+      for (const f of leftover) {
+        fs.unlinkSync(path.join(generatedDir, f));
+      }
+    }
     if (!fs.existsSync(generatedDir)) fs.mkdirSync(generatedDir);
   });
 
@@ -28,12 +35,12 @@ describe("generate-eas-object task", function () {
 
   it("should generate EAS object for test schema (all_types)", function () {
     const schemaPath = path.join(schemasDir, "all_types.schema.json");
-    const output = runHardhatTask(TASK_NAME, `--schema ${schemaPath}`);
+    const output = runHardhatTask(TASK_NAME, `--schema ${schemaPath} --name _test-AllTypes`);
     expect(output).to.include("Successfully generated EAS object");
-    testOutputFile = path.join(generatedDir, "AllTypes.eas.json");
+    testOutputFile = path.join(generatedDir, "_test-AllTypes.eas.json");
     expect(fs.existsSync(testOutputFile)).to.be.true;
     const eas = JSON.parse(fs.readFileSync(testOutputFile, "utf-8"));
-    expect(eas).to.have.property("name", "AllTypes");
+    expect(eas).to.have.property("name", "_test-AllTypes");
     expect(eas).to.have.property("schema").that.is.a("string");
     expect(eas).to.have.property("revocable").that.is.a("boolean");
     expect(eas.schema).to.include("stringField");
@@ -58,12 +65,12 @@ describe("generate-eas-object task", function () {
 
   it("should use --name when provided for schema without title", function () {
     const schemaPath = path.join(schemasDir, "missing_name_version.schema.json");
-    const output = runHardhatTask(TASK_NAME, `--schema ${schemaPath} --name CustomEas`);
+    const output = runHardhatTask(TASK_NAME, `--schema ${schemaPath} --name _test-CustomEas`);
     expect(output).to.include("Successfully generated EAS object");
-    testOutputFile = path.join(generatedDir, "CustomEas.eas.json");
+    testOutputFile = path.join(generatedDir, "_test-CustomEas.eas.json");
     expect(fs.existsSync(testOutputFile)).to.be.true;
     const eas = JSON.parse(fs.readFileSync(testOutputFile, "utf-8"));
-    expect(eas.name).to.equal("CustomEas");
+    expect(eas.name).to.equal("_test-CustomEas");
   });
 
   it("should error if --schema is missing", function () {
@@ -94,10 +101,10 @@ describe("generate-eas-object task", function () {
 
   it("should auto-detect revocable true from schema revoked field with x-oma3-skip-reason eas", function () {
     const schemaPath = path.join(schemasDir, "revocable_detected.schema.json");
-    const output = runHardhatTask(TASK_NAME, `--schema ${schemaPath}`);
+    const output = runHardhatTask(TASK_NAME, `--schema ${schemaPath} --name _test-RevocableDetected`);
     expect(output).to.include("Successfully generated EAS object");
     expect(output).to.include("auto-detected from schema");
-    testOutputFile = path.join(generatedDir, "RevocableDetected.eas.json");
+    testOutputFile = path.join(generatedDir, "_test-RevocableDetected.eas.json");
     expect(fs.existsSync(testOutputFile)).to.be.true;
     const eas = JSON.parse(fs.readFileSync(testOutputFile, "utf-8"));
     expect(eas.revocable).to.equal(true);
@@ -105,10 +112,10 @@ describe("generate-eas-object task", function () {
 
   it("should use --revocable CLI override when provided", function () {
     const schemaPath = path.join(schemasDir, "all_types.schema.json");
-    const output = runHardhatTask(TASK_NAME, `--schema ${schemaPath} --name RevocableOverride --revocable true`);
+    const output = runHardhatTask(TASK_NAME, `--schema ${schemaPath} --name _test-RevocableOverride --revocable true`);
     expect(output).to.include("Successfully generated EAS object");
     expect(output).to.include("from CLI override");
-    testOutputFile = path.join(generatedDir, "RevocableOverride.eas.json");
+    testOutputFile = path.join(generatedDir, "_test-RevocableOverride.eas.json");
     expect(fs.existsSync(testOutputFile)).to.be.true;
     const eas = JSON.parse(fs.readFileSync(testOutputFile, "utf-8"));
     expect(eas.revocable).to.equal(true);
@@ -116,12 +123,12 @@ describe("generate-eas-object task", function () {
 
   it("should skip metadata/eas and include unused (x-oma3-skip-reason) in schema", function () {
     const schemaPath = path.join(schemasDir, "skip_reasons.schema.json");
-    const output = runHardhatTask(TASK_NAME, `--schema ${schemaPath}`);
+    const output = runHardhatTask(TASK_NAME, `--schema ${schemaPath} --name _test-SkipReasons`);
     expect(output).to.include("Successfully generated EAS object");
     expect(output).to.include("Skipping field");
     expect(output).to.include("Including reserved field");
     expect(output).to.include("x-oma3-skip-reason: unused");
-    testOutputFile = path.join(generatedDir, "SkipReasons.eas.json");
+    testOutputFile = path.join(generatedDir, "_test-SkipReasons.eas.json");
     expect(fs.existsSync(testOutputFile)).to.be.true;
     const eas = JSON.parse(fs.readFileSync(testOutputFile, "utf-8"));
     expect(eas.schema).to.include("value");
@@ -132,9 +139,9 @@ describe("generate-eas-object task", function () {
 
   it("should use cached external schema when same $ref is resolved twice", function () {
     const schemaPath = path.join(schemasDir, "cache_hit_eas.schema.json");
-    const output = runHardhatTask(TASK_NAME, `--schema ${schemaPath}`);
+    const output = runHardhatTask(TASK_NAME, `--schema ${schemaPath} --name _test-CacheHitEas`);
     expect(output).to.include("Successfully generated EAS object");
-    const outPath = path.join(generatedDir, "CacheHitEas.eas.json");
+    const outPath = path.join(generatedDir, "_test-CacheHitEas.eas.json");
     expect(fs.existsSync(outPath)).to.be.true;
     const eas = JSON.parse(fs.readFileSync(outPath, "utf-8"));
     expect(eas.schema).to.include("ref1");
@@ -144,9 +151,9 @@ describe("generate-eas-object task", function () {
 
   it("should warn and skip ref when external file exists but has invalid JSON", function () {
     const schemaPath = path.join(schemasDir, "parse_error_ref_eas.schema.json");
-    const output = runHardhatTask(TASK_NAME, `--schema ${schemaPath}`);
+    const output = runHardhatTask(TASK_NAME, `--schema ${schemaPath} --name _test-ParseErrorRefEas`);
     expect(output).to.include("Successfully generated EAS object");
-    const outPath = path.join(generatedDir, "ParseErrorRefEas.eas.json");
+    const outPath = path.join(generatedDir, "_test-ParseErrorRefEas.eas.json");
     expect(fs.existsSync(outPath)).to.be.true;
     const eas = JSON.parse(fs.readFileSync(outPath, "utf-8"));
     expect(eas.schema).to.include("validField");
@@ -155,9 +162,9 @@ describe("generate-eas-object task", function () {
 
   it("should resolve array items via $ref and include string[] in schema", function () {
     const schemaPath = path.join(schemasDir, "array_items_ref_eas.schema.json");
-    const output = runHardhatTask(TASK_NAME, `--schema ${schemaPath}`);
+    const output = runHardhatTask(TASK_NAME, `--schema ${schemaPath} --name _test-ArrayItemsRefEas`);
     expect(output).to.include("Successfully generated EAS object");
-    const outPath = path.join(generatedDir, "ArrayItemsRefEas.eas.json");
+    const outPath = path.join(generatedDir, "_test-ArrayItemsRefEas.eas.json");
     expect(fs.existsSync(outPath)).to.be.true;
     const eas = JSON.parse(fs.readFileSync(outPath, "utf-8"));
     expect(eas.schema).to.include("string[] tags");
@@ -166,9 +173,9 @@ describe("generate-eas-object task", function () {
 
   it("should complete and include valid fields when some $refs fail (nonexistent file, bad path, unsupported format)", function () {
     const schemaPath = path.join(schemasDir, "ref_warnings_eas.schema.json");
-    const output = runHardhatTask(TASK_NAME, `--schema ${schemaPath}`);
+    const output = runHardhatTask(TASK_NAME, `--schema ${schemaPath} --name _test-RefWarningsEas`);
     expect(output).to.include("Successfully generated EAS object");
-    const outPath = path.join(generatedDir, "RefWarningsEas.eas.json");
+    const outPath = path.join(generatedDir, "_test-RefWarningsEas.eas.json");
     expect(fs.existsSync(outPath)).to.be.true;
     const eas = JSON.parse(fs.readFileSync(outPath, "utf-8"));
     expect(eas.schema).to.include("validField");
@@ -177,9 +184,9 @@ describe("generate-eas-object task", function () {
 
   it("should cover oneOf with then/else in collectTypesFromBranches", function () {
     const schemaPath = path.join(schemasDir, "conditional_branches_eas.schema.json");
-    const output = runHardhatTask(TASK_NAME, `--schema ${schemaPath}`);
+    const output = runHardhatTask(TASK_NAME, `--schema ${schemaPath} --name _test-ConditionalBranchesEas`);
     expect(output).to.include("Successfully generated EAS object");
-    const outPath = path.join(generatedDir, "ConditionalBranchesEas.eas.json");
+    const outPath = path.join(generatedDir, "_test-ConditionalBranchesEas.eas.json");
     expect(fs.existsSync(outPath)).to.be.true;
     const eas = JSON.parse(fs.readFileSync(outPath, "utf-8"));
     expect(eas.schema).to.include("conditionalField");
@@ -188,9 +195,9 @@ describe("generate-eas-object task", function () {
 
   it("should map string with bytes32 pattern to bytes32 (pattern branch)", function () {
     const schemaPath = path.join(schemasDir, "bytes32_only_eas.schema.json");
-    const output = runHardhatTask(TASK_NAME, `--schema ${schemaPath}`);
+    const output = runHardhatTask(TASK_NAME, `--schema ${schemaPath} --name _test-Bytes32OnlyEas`);
     expect(output).to.include("Successfully generated EAS object");
-    const outPath = path.join(generatedDir, "Bytes32OnlyEas.eas.json");
+    const outPath = path.join(generatedDir, "_test-Bytes32OnlyEas.eas.json");
     expect(fs.existsSync(outPath)).to.be.true;
     const eas = JSON.parse(fs.readFileSync(outPath, "utf-8"));
     expect(eas.schema).to.include("bytes32 hash");
@@ -199,11 +206,11 @@ describe("generate-eas-object task", function () {
 
   it("should include reserved field and log unused when only unused (x-oma3-skip-reason)", function () {
     const schemaPath = path.join(schemasDir, "unused_only.schema.json");
-    const output = runHardhatTask(TASK_NAME, `--schema ${schemaPath}`);
+    const output = runHardhatTask(TASK_NAME, `--schema ${schemaPath} --name _test-UnusedOnly`);
     expect(output).to.include("Successfully generated EAS object");
     expect(output).to.include("Including reserved field");
     expect(output).to.include("x-oma3-skip-reason: unused");
-    const outPath = path.join(generatedDir, "UnusedOnly.eas.json");
+    const outPath = path.join(generatedDir, "_test-UnusedOnly.eas.json");
     expect(fs.existsSync(outPath)).to.be.true;
     const eas = JSON.parse(fs.readFileSync(outPath, "utf-8"));
     expect(eas.schema).to.include("reserved");
@@ -212,7 +219,7 @@ describe("generate-eas-object task", function () {
 
   it("should hit unused branch in-process (run()) for coverage", async function () {
     const schemaPath = path.join(schemasDir, "unused_only.schema.json");
-    const outPath = path.join(generatedDir, "UnusedOnly.eas.json");
+    const outPath = path.join(generatedDir, "_test-UnusedOnly.eas.json");
     const logCalls: string[] = [];
     const origLog = console.log;
     console.log = (...args: unknown[]) => {
@@ -220,7 +227,7 @@ describe("generate-eas-object task", function () {
       origLog.apply(console, args);
     };
     try {
-      await run(TASK_NAME, { schema: schemaPath });
+      await run(TASK_NAME, { schema: schemaPath, name: "_test-UnusedOnly" });
       expect(fs.existsSync(outPath)).to.be.true;
       expect(logCalls.some((m) => m.includes("Including reserved field") && m.includes("unused"))).to.be.true;
       testOutputFile = outPath;
@@ -231,12 +238,12 @@ describe("generate-eas-object task", function () {
 
   it("should hit skip metadata/eas and unused branches in-process (skip_reasons)", async function () {
     const schemaPath = path.join(schemasDir, "skip_reasons.schema.json");
-    const outPath = path.join(generatedDir, "SkipReasons.eas.json");
+    const outPath = path.join(generatedDir, "_test-SkipReasons.eas.json");
     const logCalls: string[] = [];
     const origLog = console.log;
     console.log = (...args: unknown[]) => logCalls.push(args.map(String).join(" "));
     try {
-      await run(TASK_NAME, { schema: schemaPath });
+      await run(TASK_NAME, { schema: schemaPath, name: "_test-SkipReasons" });
       expect(fs.existsSync(outPath)).to.be.true;
       expect(logCalls.some((m) => m.includes("Skipping field") && m.includes("x-oma3-skip-reason"))).to.be.true;
       expect(logCalls.some((m) => m.includes("Including reserved field") && m.includes("unused"))).to.be.true;
@@ -248,9 +255,9 @@ describe("generate-eas-object task", function () {
 
   it("should map hashField and objectField from bytes32_and_object schema", function () {
     const schemaPath = path.join(schemasDir, "bytes32_and_object.schema.json");
-    const output = runHardhatTask(TASK_NAME, `--schema ${schemaPath}`);
+    const output = runHardhatTask(TASK_NAME, `--schema ${schemaPath} --name _test-Bytes32AndObject`);
     expect(output).to.include("Successfully generated EAS object");
-    testOutputFile = path.join(generatedDir, "Bytes32AndObject.eas.json");
+    testOutputFile = path.join(generatedDir, "_test-Bytes32AndObject.eas.json");
     expect(fs.existsSync(testOutputFile)).to.be.true;
     const eas = JSON.parse(fs.readFileSync(testOutputFile, "utf-8"));
     expect(eas.schema).to.include("hashField");
@@ -259,9 +266,9 @@ describe("generate-eas-object task", function () {
 
   it("should cover array items type [null] and array without valid items type (skipped)", function () {
     const schemaPath = path.join(schemasDir, "coverage_branches_eas.schema.json");
-    const output = runHardhatTask(TASK_NAME, `--schema ${schemaPath}`);
+    const output = runHardhatTask(TASK_NAME, `--schema ${schemaPath} --name _test-CoverageBranchesEas`);
     expect(output).to.include("Successfully generated EAS object");
-    testOutputFile = path.join(generatedDir, "CoverageBranchesEas.eas.json");
+    testOutputFile = path.join(generatedDir, "_test-CoverageBranchesEas.eas.json");
     expect(fs.existsSync(testOutputFile)).to.be.true;
     const eas = JSON.parse(fs.readFileSync(testOutputFile, "utf-8"));
     expect(eas.schema).to.not.include("arrayItemsNull");
@@ -273,11 +280,11 @@ describe("generate-eas-object task", function () {
     if (!fs.existsSync(tempCwd)) {
       fs.mkdirSync(tempCwd, { recursive: true });
     }
-    const output = runHardhatTask(TASK_NAME, "--schema ../schemas/all_types.schema.json", { cwd: tempCwd });
+    const output = runHardhatTask(TASK_NAME, "--schema ../schemas/all_types.schema.json --name _test-AllTypes", { cwd: tempCwd });
     expect(output).to.include("Successfully generated EAS object");
     const tempGenerated = path.join(tempCwd, "generated");
     expect(fs.existsSync(tempGenerated)).to.be.true;
-    const outFile = path.join(tempGenerated, "AllTypes.eas.json");
+    const outFile = path.join(tempGenerated, "_test-AllTypes.eas.json");
     expect(fs.existsSync(outFile)).to.be.true;
     if (fs.existsSync(outFile)) fs.unlinkSync(outFile);
     if (fs.existsSync(tempGenerated)) fs.rmdirSync(tempGenerated);
