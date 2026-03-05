@@ -1,0 +1,28 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://example.com/skip_reasons.schema.json",
+  "title": "SkipReasons",
+  "type": "object",
+  "properties": {
+    "value": {
+      "type": "string",
+      "description": "Included field."
+    },
+    "metadataField": {
+      "type": "string",
+      "description": "Skipped (metadata).",
+      "x-oma3-skip-reason": "metadata"
+    },
+    "easField": {
+      "type": "boolean",
+      "description": "Skipped (eas).",
+      "x-oma3-skip-reason": "eas"
+    },
+    "reservedField": {
+      "type": "string",
+      "description": "Included per spec (unused).",
+      "x-oma3-skip-reason": "unused"
+    }
+  },
+  "required": ["value"]
+}

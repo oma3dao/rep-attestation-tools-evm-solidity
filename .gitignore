@@ -35,11 +35,12 @@ Thumbs.db
 *.tmp
 *.tsbuildinfo
 
-# Ignore temporary or unimportant files
+# Ignore temporary generated files
 generated/*.tmp
 generated/*.log
-generated/TestDeploySchema.bas.json
-generated/TestDeploySchema.deployed.bas.json
+
+# Ignore test-generated artifacts (prefixed with _test-)
+generated/_test-*
 
 # Ignore schema deployment metadata (can be committed if version-controlled)
 schema-deployments/*.json

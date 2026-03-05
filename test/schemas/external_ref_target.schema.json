@@ -1,0 +1,5 @@
+{
+  "definitions": {
+    "Foo": { "type": "string", "description": "Referenced type" }
+  }
+}

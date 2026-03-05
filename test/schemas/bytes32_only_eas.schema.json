@@ -1,0 +1,14 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Bytes32OnlyEas",
+  "description": "Single string with bytes32 pattern to cover pattern branch in jsonTypeToAbi",
+  "type": "object",
+  "properties": {
+    "hash": {
+      "type": "string",
+      "pattern": "0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "description": "Bytes32 pattern"
+    }
+  },
+  "required": ["hash"]
+}

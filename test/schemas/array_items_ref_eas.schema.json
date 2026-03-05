@@ -1,0 +1,16 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "ArrayItemsRefEas",
+  "type": "object",
+  "properties": {
+    "tags": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/stringItem" },
+      "description": "Array items via $ref to cover resolveProperty for items"
+    }
+  },
+  "$defs": {
+    "stringItem": { "type": "string" }
+  },
+  "required": ["tags"]
+}

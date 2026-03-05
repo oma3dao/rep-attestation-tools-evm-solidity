@@ -1,0 +1,10 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "CacheHitBas",
+  "type": "object",
+  "properties": {
+    "ref1": { "$ref": "external_ref_target.schema.json#/definitions/Foo" },
+    "ref2": { "$ref": "external_ref_target.schema.json#/definitions/Foo" }
+  },
+  "required": ["ref1", "ref2"]
+}
