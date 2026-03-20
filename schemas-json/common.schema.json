@@ -280,8 +280,8 @@
     "Version": {
       "type": "string",
       "title": "Semantic Version",
-      "pattern": "^\\d+\\.\\d+\\.\\d+$",
-      "description": "Semantic version string (e.g., '1.2.3').",
+      "pattern": "^\\d+(\\.\\d+){0,2}$",
+      "description": "Version string (e.g., '1', '1.2', or '1.2.3').",
       "maxLength": 50,
       "x-oma3-subtype": "semver"
     }

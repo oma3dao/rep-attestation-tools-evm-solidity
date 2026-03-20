@@ -34,7 +34,7 @@ Excludes a field from form generation. Common values:
 Specifies the semantic meaning of a field to control UI rendering and validation. Supported values:
 
 - `"timestamp"` - Unix timestamp in seconds (for `integer` fields). Renders as a datetime picker in UIs.
-- `"semver"` - Semantic version string (for `string` fields with a `^\d+\.\d+\.\d+$` pattern).
+- `"semver"` - Version string (for `string` fields with a `^\d+(\.\d+){0,2}$` pattern).
 
 **Example:**
 ```json
