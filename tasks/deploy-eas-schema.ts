@@ -11,12 +11,11 @@ interface EasSchemaObject {
   name: string;
   schema: string;
   revocable: boolean;
-  resolver?: string; // Optional; resolver is typically passed via CLI at deploy time
 }
 
 task("deploy-eas-schema", "Deploy an EAS schema from a .eas.json file")
   .addParam("file", "Path to the .eas.json file (e.g. generated/Endorsement.eas.json or generated/Endorsement.eastest.json)")
-  .addOptionalParam("resolver", "Resolver contract address (overrides JSON file)")
+  .addOptionalParam("resolver", "Resolver contract address (e.g. fee resolver on external chains)")
   .addOptionalParam("wait", "Time to wait in seconds before verifying schema (default: 5)", "5")
   .setAction(async (taskArgs, hre) => {
     const { file, resolver: resolverOverride, wait: waitTimeArg } = taskArgs;
@@ -53,10 +52,10 @@ task("deploy-eas-schema", "Deploy an EAS schema from a .eas.json file")
     schemaRegistry.connect(signer);
 
     // Calculate the expected schema UID
-    // CLI flag takes precedence over JSON file for resolver address
-    const resolverAddress = resolverOverride || (easSchema.resolver && easSchema.resolver !== "" ? easSchema.resolver : ZERO_ADDRESS);
+    // CLI flag sets the resolver; if not provided, no resolver (zero address)
+    const resolverAddress = resolverOverride || ZERO_ADDRESS;
     if (resolverOverride) {
-      console.log(`Using resolver from CLI flag: ${resolverOverride}`);
+      console.log(`Using resolver: ${resolverOverride}`);
     }
     let expectedSchemaUID = calculateSchemaUID(
       easSchema.schema, 
