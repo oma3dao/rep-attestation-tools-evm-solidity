@@ -10,12 +10,10 @@ const TASK_NAME = "eas-encode-data";
 
 describe("eas-encode-data task", function () {
   it("should encode string and uint256", function () {
+    const expected = AbiCoder.defaultAbiCoder().encode(["string", "uint256"], ["hello", 42]);
     const output = runHardhatTask(TASK_NAME, '--types "string,uint256" --values "hello,42"');
     expect(output).to.include("Encoded data:");
-    expect(output).to.include("0x");
-    const hexMatch = output.match(/0x[a-fA-F0-9]+/);
-    expect(hexMatch).to.not.be.null;
-    expect(hexMatch![0].length).to.be.greaterThan(10, "encoded data should be non-trivial");
+    expect(output).to.include(expected);
   });
 
   it("should produce known-good ABI encoding for string,uint256 with hello,42", function () {
@@ -30,16 +28,23 @@ describe("eas-encode-data task", function () {
   });
 
   it("should encode bool", function () {
+    const expectedBool = AbiCoder.defaultAbiCoder().encode(["bool"], [true]);
     const output = runHardhatTask(TASK_NAME, '--types "bool" --values "true"');
-    expect(output).to.include("0x");
+    const hexMatch = output.match(/0x[a-fA-F0-9]+/);
+    expect(hexMatch).to.not.be.null;
+    expect(hexMatch![0]).to.equal(expectedBool);
   });
 
   it("should encode address", function () {
+    const expectedAddr = AbiCoder.defaultAbiCoder().encode(
+      ["address"],
+      ["0x0000000000000000000000000000000000000000"]
+    );
     const output = runHardhatTask(
       TASK_NAME,
       '--types "address" --values "0x0000000000000000000000000000000000000000"'
     );
-    expect(output).to.include("0x");
+    expect(output).to.include(expectedAddr);
   });
 
   it("should fail when type and value count mismatch", function () {
@@ -52,24 +57,33 @@ describe("eas-encode-data task", function () {
   });
 
   it("should encode bytes32 (with 0x prefix)", function () {
+    const bytes32Val = "0x0000000000000000000000000000000000000000000000000000000000000001";
+    const expectedBytes32 = AbiCoder.defaultAbiCoder().encode(["bytes32"], [bytes32Val]);
     const output = runHardhatTask(
       TASK_NAME,
-      '--types "bytes32" --values "0x0000000000000000000000000000000000000000000000000000000000000001"'
+      `--types "bytes32" --values "${bytes32Val}"`
     );
-    expect(output).to.include("0x");
     expect(output).to.include("Encoding data:");
+    expect(output).to.include(expectedBytes32);
   });
 
   it("should encode bytes32 (without 0x prefix adds it)", function () {
+    const expectedBytes32 = AbiCoder.defaultAbiCoder().encode(
+      ["bytes32"],
+      ["0x0000000000000000000000000000000000000000000000000000000000000001"]
+    );
     const output = runHardhatTask(
       TASK_NAME,
       '--types "bytes32" --values "0000000000000000000000000000000000000000000000000000000000000001"'
     );
-    expect(output).to.include("0x");
+    expect(output).to.include(expectedBytes32);
   });
 
   it("should encode int type", function () {
+    const expectedInt = AbiCoder.defaultAbiCoder().encode(["int256"], [-42]);
     const output = runHardhatTask(TASK_NAME, '--types "int256" --values "-42"');
-    expect(output).to.include("0x");
+    const hexMatch = output.match(/0x[a-fA-F0-9]+/);
+    expect(hexMatch).to.not.be.null;
+    expect(hexMatch![0]).to.equal(expectedInt);
   });
 });

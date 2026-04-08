@@ -337,7 +337,7 @@ describe("EAS contract tasks (mocked getContractAt)", function () {
           recipient: MOCK_RECIPIENT,
           data: "0xabcdef",
         });
-        expect(logCalls.some((m) => m.includes("Attestation UID"))).to.be.true;
+        expect(logCalls.some((m) => m.includes("Attestation UID") && m.includes(MOCK_ATTESTATION_UID))).to.be.true;
         expect(logCalls.some((m) => m.includes("Confirmed in block"))).to.be.true;
       } finally {
         console.log = origLog;
@@ -358,7 +358,7 @@ describe("EAS contract tasks (mocked getContractAt)", function () {
           values: "hello,42",
         });
         expect(logCalls.some((m) => m.includes("Encoded data from types and values"))).to.be.true;
-        expect(logCalls.some((m) => m.includes("Attestation UID"))).to.be.true;
+        expect(logCalls.some((m) => m.includes("Attestation UID") && m.includes(MOCK_ATTESTATION_UID))).to.be.true;
       } finally {
         console.log = origLog;
       }
@@ -382,9 +382,9 @@ describe("EAS contract tasks (mocked getContractAt)", function () {
         values: "999",
       });
 
-      // The encoded data should contain 999 as BigInt — verify the call was made
       expect(capturedData).to.have.property("schema", MOCK_SCHEMA_UID);
-      expect(capturedData.data).to.have.property("data").that.is.a("string");
+      const decodedUint = hre.ethers.AbiCoder.defaultAbiCoder().decode(["uint256"], capturedData.data.data);
+      expect(decodedUint[0]).to.equal(999n);
     });
 
     it("should convert bool type correctly", async function () {
@@ -406,8 +406,8 @@ describe("EAS contract tasks (mocked getContractAt)", function () {
       });
 
       expect(capturedData).to.have.property("schema", MOCK_SCHEMA_UID);
-      // Encoded data should contain the bool encoding
-      expect(capturedData.data.data).to.be.a("string");
+      const decodedBool = hre.ethers.AbiCoder.defaultAbiCoder().decode(["bool"], capturedData.data.data);
+      expect(decodedBool[0]).to.equal(true);
     });
 
     it("should prepend 0x to bytes32/address values when missing", async function () {
@@ -429,7 +429,8 @@ describe("EAS contract tasks (mocked getContractAt)", function () {
       });
 
       expect(capturedData).to.have.property("schema", MOCK_SCHEMA_UID);
-      expect(capturedData.data.data).to.be.a("string");
+      const decodedAddr = hre.ethers.AbiCoder.defaultAbiCoder().decode(["address"], capturedData.data.data);
+      expect(decodedAddr[0].toLowerCase()).to.equal("0x" + "e".repeat(40));
     });
 
     it("should throw when type count doesn't match value count", async function () {

@@ -339,8 +339,7 @@ describe("EAS/BAS tasks (mocked registry and provider)", function () {
 
       const file = path.join("generated", "Controller-Witness.eas.json");
       const result = await run("deploy-eas-schema", { file });
-      expect(result).to.be.a("string");
-      expect(result).to.match(/^0x[a-fA-F0-9]{64}$/);
+      expect(result).to.equal("0xc81419f828755c0be2c49091dcad0887b5ca7342316dfffb4314aadbf8205090");
     });
 
     it("should deploy and verify when schema does not exist (mock register then getSchema)", async function () {
@@ -469,7 +468,7 @@ describe("EAS/BAS tasks (mocked registry and provider)", function () {
       console.log = (...args: unknown[]) => logCalls.push(args.map(String).join(" "));
       try {
         const result = await run("deploy-eas-schema", { file: path.join("test", "fixtures", "DeployOnly.eastest.json"), wait: "0" });
-        expect(result).to.match(/^0x[a-fA-F0-9]{64}$/);
+        expect(result).to.equal("0xa3691f973db15364429c2630005260699e17c1353c6a88b8893f5362a97c49d6");
         expect(logCalls.some((m) => m.includes("BLOCK NUMBER") && m.includes("unknown"))).to.be.true;
         const deployedPath = path.join("test", "fixtures", "DeployOnly.deployed.eastest.json");
         if (fs.existsSync(deployedPath)) easDeployedFile = deployedPath;
@@ -764,7 +763,7 @@ describe("EAS/BAS tasks (mocked registry and provider)", function () {
       };
       const file = path.join("generated", "Controller-Witness.eas.json");
       const result = await run("deploy-eas-schema", { file });
-      expect(result).to.match(/^0x[a-fA-F0-9]{64}$/);
+      expect(result).to.equal("0xc81419f828755c0be2c49091dcad0887b5ca7342316dfffb4314aadbf8205090");
     });
 
     it("should use resolver from CLI when --resolver provided", async function () {
@@ -784,7 +783,7 @@ describe("EAS/BAS tasks (mocked registry and provider)", function () {
         file,
         resolver: "0x1234567890123456789012345678901234567890",
       });
-      expect(result).to.match(/^0x[a-fA-F0-9]{64}$/);
+      expect(result).to.equal("0x4694e87ce79dea28a0da0fc1ac21fb164d02232625184010d97c33656dc29873");
     });
   });
 
@@ -815,8 +814,7 @@ describe("EAS/BAS tasks (mocked registry and provider)", function () {
 
       const file = path.join("test", "fixtures", "sample.bas.json");
       const result = await run("deploy-bas-schema", { file });
-      expect(result).to.be.a("string");
-      expect(result).to.match(/^0x[a-fA-F0-9]{64}$/);
+      expect(result).to.equal("0x408402ea3069a64d67b1c470079d2e8ed3efed10c776c397241d18e184bf388a");
 
       const deployedPath = path.join("test", "fixtures", "Sample.deployed.bastest.json");
       if (fs.existsSync(deployedPath)) basDeployedFile = deployedPath;
@@ -836,7 +834,7 @@ describe("EAS/BAS tasks (mocked registry and provider)", function () {
       };
       const file = path.join("test", "fixtures", "sample.bas.json");
       const result = await run("deploy-bas-schema", { file });
-      expect(result).to.match(/^0x[a-fA-F0-9]{64}$/);
+      expect(result).to.equal("0x408402ea3069a64d67b1c470079d2e8ed3efed10c776c397241d18e184bf388a");
       const deployedPath = path.join("test", "fixtures", "Sample.deployed.bastest.json");
       const content = fs.readFileSync(deployedPath, "utf-8");
       expect(content).to.include("unknown");
@@ -994,7 +992,7 @@ describe("EAS/BAS tasks (mocked registry and provider)", function () {
       console.log = (...args: unknown[]) => logCalls.push(args.map(String).join(" "));
       try {
         const result = await run("deploy-bas-schema", { file: path.join("test", "fixtures", "DeployOnlyBas.bastest.json"), wait: "0" });
-        expect(result).to.match(/^0x[a-fA-F0-9]{64}$/);
+        expect(result).to.equal("0xa3691f973db15364429c2630005260699e17c1353c6a88b8893f5362a97c49d6");
         expect(logCalls.some((m) => m.includes("BLOCK NUMBER") && m.includes("unknown"))).to.be.true;
         const deployedPath = path.join("test", "fixtures", "DeployOnlyBas.deployed.bastest.json");
         if (fs.existsSync(deployedPath)) basSchemaDeployedFile = deployedPath;
@@ -1038,7 +1036,7 @@ describe("EAS/BAS tasks (mocked registry and provider)", function () {
       try {
         const file = path.join("test", "fixtures", "DeployOnlyBas.bastest.json");
         const result = await run("deploy-bas-schema", { file, wait: "0" });
-        expect(result).to.match(/^0x[a-fA-F0-9]{64}$/);
+        expect(result).to.equal("0xa3691f973db15364429c2630005260699e17c1353c6a88b8893f5362a97c49d6");
         expect(logCalls.some((m) => m.includes("Transaction confirmed in block") && m.includes(String(waitBlockNumber)))).to.be.true;
         const deployedPath = path.join("test", "fixtures", "DeployOnlyBas.deployed.bastest.json");
         if (fs.existsSync(deployedPath)) basSchemaDeployedFile = deployedPath;
@@ -1358,7 +1356,7 @@ describe("EAS/BAS tasks (mocked registry and provider)", function () {
       };
       const file = path.join("test", "fixtures", "sample.bas.json");
       const result = await run("deploy-bas-schema", { file });
-      expect(result).to.match(/^0x[a-fA-F0-9]{64}$/);
+      expect(result).to.equal("0x408402ea3069a64d67b1c470079d2e8ed3efed10c776c397241d18e184bf388a");
       const deployedPath = path.join("test", "fixtures", "Sample.deployed.bas.json");
       if (fs.existsSync(deployedPath)) basDeployedFile = deployedPath;
     });
@@ -1509,6 +1507,9 @@ describe("EAS/BAS tasks (mocked registry and provider)", function () {
           },
         };
       };
+      const logCalls: string[] = [];
+      const origLog = console.log;
+      console.log = (...args: unknown[]) => logCalls.push(args.map(String).join(" "));
       try {
         await run("eas-attest", {
           schema: "0x" + "a".repeat(64),
@@ -1516,7 +1517,9 @@ describe("EAS/BAS tasks (mocked registry and provider)", function () {
           types: "string",
           values: "test",
         });
+        expect(logCalls.some((m) => m.includes("Attestation UID") && m.includes(uidFromEvent))).to.be.true;
       } finally {
+        console.log = origLog;
         hre.ethers.getContractAt = originalGetContractAt;
       }
     });
