@@ -20,9 +20,10 @@ describe("test-schema-uid task", function () {
 
   it("should run with --file (non-deployed schema) and output calculated UID", function () {
     const schemaPath = path.join(__dirname, "fixtures", "sample-uid.bas.json");
+    const expectedUID = "0x408402ea3069a64d67b1c470079d2e8ed3efed10c776c397241d18e184bf388a";
     const output = runHardhatTask(TASK_NAME, `--file ${schemaPath}`);
     expect(output).to.include("Calculated UID:");
-    expect(output).to.include("0x");
+    expect(output).to.include(expectedUID);
     expect(output).to.include("Schema:");
   });
 

@@ -23,10 +23,9 @@ export function runSharedUidFormulaTests(
   formatSchemaUID: FormatSchemaUID
 ): void {
   describe("calculateSchemaUID (shared formula)", function () {
-    it("should return a 66-character hex string (0x + 64 hex)", function () {
+    it("should return the expected UID for known inputs", function () {
       const uid = calculateSchemaUID("string subject, string controller", ZERO, false);
-      expect(uid).to.match(/^0x[a-fA-F0-9]{64}$/);
-      expect(uid).to.have.lengthOf(66);
+      expect(uid).to.equal("0xa3691f973db15364429c2630005260699e17c1353c6a88b8893f5362a97c49d6");
     });
 
     it("should be deterministic for same inputs", function () {
