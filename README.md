@@ -271,6 +271,19 @@ cp ../rep-attestation-frontend/src/config/schemas.ts ../app-registry-frontend/sr
 
 This ensures the app-registry-frontend can query and display attestations using the correct schema UIDs.
 
+#### Step 5: Update Backend Subject-Scoped Schema UIDs (if applicable)
+
+If the deployed schema requires subject ownership verification (key-binding, linked-identifier, user-review-response), add its deployed UID to the `OMATRUST_SUBJECT_SCOPED_SCHEMA_UIDS` environment variable in `omatrust-backend`.
+
+This env var is a comma-separated list of schema UIDs. The backend relay checks this list before submitting subject-scoped attestations and rejects submissions where the attester has not proven ownership of the subject DID.
+
+```bash
+# In omatrust-backend/.env.local (and deployed environments)
+OMATRUST_SUBJECT_SCOPED_SCHEMA_UIDS=0x...,0x...,0x...
+```
+
+The UIDs are chain-specific — use the deployed UIDs from the `generated/*.deployed.eastest.json` files for the active chain.
+
 #### Complete Deployment Workflow Example
 
 ```bash
@@ -297,7 +310,10 @@ npm run update-schemas ../rep-attestation-tools-evm-solidity
 cd ../app-registry-frontend
 npm run update-schemas ../rep-attestation-tools-evm-solidity
 
-# 6. Verify the updates with git diff
+# 6. Update backend subject-scoped schema UIDs (if schema requires subject ownership)
+# Add the deployed UID to OMATRUST_SUBJECT_SCOPED_SCHEMA_UIDS in omatrust-backend/.env.local
+
+# 7. Verify the updates with git diff
 cd ../rep-attestation-frontend
 git diff src/config/schemas.ts
 ```
