@@ -14,7 +14,7 @@ interface EasSchemaObject {
 }
 
 task("deploy-eas-schema", "Deploy an EAS schema from a .eas.json file")
-  .addParam("file", "Path to the .eas.json file (e.g. generated/Endorsement.eas.json or generated/Endorsement.eastest.json)")
+  .addParam("file", "Path to the .eas.json file (e.g. generated/Certification.eas.json or generated/Certification.eastest.json)")
   .addOptionalParam("resolver", "Resolver contract address (e.g. fee resolver on external chains)")
   .addOptionalParam("wait", "Time to wait in seconds before verifying schema (default: 5)", "5")
   .setAction(async (taskArgs, hre) => {

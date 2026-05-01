@@ -27,7 +27,7 @@ function getTxHash(tx: any): string {
 }
 
 task("deploy-bas-schema", "Deploy a BAS schema from a .bas.json file")
-  .addParam("file", "Path to the .bas.json file (e.g. generated/Endorsement.bas.json or generated/Endorsement.bastest.json)")
+  .addParam("file", "Path to the .bas.json file (e.g. generated/Certification.bas.json or generated/Certification.bastest.json)")
   .addOptionalParam("wait", "Time to wait in seconds before verifying schema (default: 5)", "5")
   .setAction(async (taskArgs, hre) => {
     const { file, wait: waitTimeArg } = taskArgs;
