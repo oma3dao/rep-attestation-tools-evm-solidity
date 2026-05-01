@@ -2,7 +2,7 @@
 
 Schemas in this repository are defined using [JSON Schema](https://json-schema.org/) (Draft 2020-12), which provides a standard way to describe the structure and validation rules for attestation data. For the complete JSON Schema specification, see the [official documentation](https://json-schema.org/specification).
 
-All schema definitions are located in this directory (`schemas-json/`). Each schema file follows the naming convention `[schema-name].schema.json` (e.g., `endorsement.schema.json`, `security-assessment.schema.json`).
+All schema definitions are located in this directory (`schemas-json/`). Each schema file follows the naming convention `[schema-name].schema.json` (e.g., `certification.schema.json`, `security-assessment.schema.json`).
 
 ## OMA3 Schema Extensions
 
@@ -27,7 +27,7 @@ Excludes a field from form generation. Common values:
 }
 ```
 
-**Schemas using this field:** All schemas (@context, @type — metadata); all schemas with attester field (eas); user-review, certification, endorsement, security-assessment (unused — payloadVersion, payloadSpecURI, etc.)
+**Schemas using this field:** All schemas (@context, @type — metadata); all schemas with attester field (eas); user-review, certification, security-assessment (unused — payloadVersion, payloadSpecURI, etc.)
 
 ### `x-oma3-subtype`
 
@@ -48,7 +48,7 @@ Specifies the semantic meaning of a field to control UI rendering and validation
 }
 ```
 
-**Schemas using this field:** All schemas (timestamp fields: issuedAt, effectiveAt, expiresAt); user-review, endorsement, security-assessment (version — semver)
+**Schemas using this field:** All schemas (timestamp fields: issuedAt, effectiveAt, expiresAt); user-review, security-assessment (version — semver)
 
 ### `x-oma3-default`
 
@@ -58,7 +58,7 @@ Specifies auto-generation behavior for field defaults. Supported values:
 - `"current-datetime"` - Auto-generates ISO 8601 datetime string (for `string` fields with `format: "date-time"`)
 - `"current-date"` - Auto-generates ISO 8601 date string (for `string` fields with `format: "date"`)
 
-**Schemas using this field:** user-review, linked-identifier, key-binding, certification, endorsement, security-assessment (issuedAt, effectiveAt); user-review-response (issuedAt)
+**Schemas using this field:** user-review, linked-identifier, key-binding, certification, security-assessment (issuedAt, effectiveAt); user-review-response (issuedAt)
 
 **Example:**
 ```json
@@ -123,7 +123,7 @@ Hints which DID methods are recommended for a DID-formatted field. Helps UIs off
 }
 ```
 
-**Schemas using this field:** user-review, linked-identifier, key-binding, certification, endorsement, security-assessment, user-review-response
+**Schemas using this field:** user-review, linked-identifier, key-binding, certification, security-assessment, user-review-response
 
 > **Note:** This is advisory only — validators should accept any valid DID format regardless of the listed methods.
 
