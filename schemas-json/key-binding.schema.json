@@ -13,10 +13,6 @@
     "attestation",
     "reputation"
   ],
-  "x-oma3-witness": {
-    "subjectField": "subject",
-    "controllerField": "keyId"
-  },
   "required": [
     "attester",
     "subject",
