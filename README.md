@@ -22,7 +22,6 @@ This repository contains EVM-compatible smart contracts and developer tools for 
 
 - ✅ **Security Assessment** – putting security audits onchain
 - ✅ **Linked Identifier** – attesting to shared control of two IDs
-- ✅ **Endorsement** – signaling reputational support
 - ✅ **Certification** – verifying conformance via test labs or assessors
 - ✅ **Key Binding** – binding a cryptographic key to a DID
 - ✅ **Controller Witness** – immutable record that a controller assertion was observed at a point in time
@@ -174,7 +173,7 @@ Chain-specific data (UID, block number, network) is stored in deployment files:
 To generate an EAS-compatible schema object from a JSON Schema file, use the `generate-eas-object` task:
 
 ```bash
-npx hardhat generate-eas-object --schema schemas-json/endorsement.schema.json --network omachainTestnet
+npx hardhat generate-eas-object --schema schemas-json/certification.schema.json --network omachainTestnet
 ```
 
 The `--network` flag is required by Hardhat but does not affect the generated output. The same `[name].eas.json` file is produced regardless of network.
@@ -196,13 +195,13 @@ To deploy a schema to the EAS registry, use the `deploy-eas-schema` task:
 
 ```bash
 # Deploy to OMAchain testnet (no resolver - server-side validation)
-npx hardhat deploy-eas-schema --file generated/Endorsement.eas.json --network omachainTestnet
+npx hardhat deploy-eas-schema --file generated/Certification.eas.json --network omachainTestnet
 
 # Deploy to OMAchain mainnet (no resolver)
-npx hardhat deploy-eas-schema --file generated/Endorsement.eas.json --network omachainMainnet
+npx hardhat deploy-eas-schema --file generated/Certification.eas.json --network omachainMainnet
 
 # Deploy to external chains WITH fee resolver (Base, Ethereum, Arbitrum, etc.)
-npx hardhat deploy-eas-schema --file generated/Endorsement.eas.json --resolver 0xYourFeeResolverAddress --network base
+npx hardhat deploy-eas-schema --file generated/Certification.eas.json --resolver 0xYourFeeResolverAddress --network base
 ```
 
 See `app-registry-evm-solidity/contracts/eas/OMATrustFeeResolver.sol` for the resolver implementation and `app-registry-evm-solidity/tasks/deploy/fee-resolver.ts` for this resolver's deployment script.
@@ -234,7 +233,7 @@ Once you've deployed a schema, you **MUST** update the frontend with the new sch
 Check that deployment files were updated in the `generated/` directory:
 ```bash
 git status generated/
-git diff generated/Endorsement.deployed.eastest.json
+git diff generated/Certification.deployed.eastest.json
 ```
 
 You should see the new UID and block number in the diff.
@@ -289,12 +288,12 @@ The UIDs are chain-specific — use the deployed UIDs from the `generated/*.depl
 ```bash
 # 1. Generate EAS object from JSON schema
 npx hardhat generate-eas-object \
-  --schema schemas-json/endorsement.schema.json \
+  --schema schemas-json/certification.schema.json \
   --network omachainTestnet
 
 # 2. Deploy the schema
 npx hardhat deploy-eas-schema \
-  --file generated/Endorsement.eas.json \
+  --file generated/Certification.eas.json \
   --network omachainTestnet
 
 # 3. Verify deployment (optional)
@@ -341,10 +340,10 @@ After deploying a schema, you can verify it exists on-chain and matches your loc
 
 ```bash
 # Verify using deployed schema file
-npx hardhat verify-eas-schema --network omachainTestnet --file generated/Endorsement.deployed.eastest.json
+npx hardhat verify-eas-schema --network omachainTestnet --file generated/Certification.deployed.eastest.json
 
 # Verify using schema object file
-npx hardhat verify-eas-schema --network omachainTestnet --file generated/Endorsement.eas.json
+npx hardhat verify-eas-schema --network omachainTestnet --file generated/Certification.eas.json
 
 # Verify using UID directly
 npx hardhat verify-eas-schema --network omachainTestnet --uid 0xda787e2c5b89cd1b2c77d7a9565573cc89bac752e9b587f3348e85c62d606a68

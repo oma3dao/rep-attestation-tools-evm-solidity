@@ -5,7 +5,7 @@ import * as fs from 'fs';
 import * as path from 'path';
 
 task("test-schema-uid", "Test the schema UID calculation against BAS reference implementation")
-  .addOptionalParam("file", "Path to the BAS schema JSON file (e.g., generated/Endorsement.bastest.json)")
+  .addOptionalParam("file", "Path to the BAS schema JSON file (e.g., generated/Certification.bastest.json)")
   .setAction(async (taskArgs, hre) => {
     let schemaObject;
     let expectedUID;
