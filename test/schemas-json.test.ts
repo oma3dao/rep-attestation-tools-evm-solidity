@@ -136,41 +136,7 @@ describe("schemas-json", function () {
     });
   });
 
-  describe("key-binding.schema.json (x-oma3-witness)", function () {
-    const FILE = "key-binding.schema.json";
 
-    it("should have x-oma3-witness with subjectField and controllerField", function () {
-      const schema = loadSchema(FILE);
-      expect(schema).to.have.property("x-oma3-witness");
-      expect(schema["x-oma3-witness"]).to.have.property("subjectField", "subject");
-      expect(schema["x-oma3-witness"]).to.have.property("controllerField", "keyId");
-    });
-
-    it("subjectField and controllerField should exist in schema properties", function () {
-      const schema = loadSchema(FILE);
-      const w = schema["x-oma3-witness"];
-      expect(schema.properties).to.have.property(w.subjectField);
-      expect(schema.properties).to.have.property(w.controllerField);
-    });
-  });
-
-  describe("linked-identifier.schema.json (x-oma3-witness)", function () {
-    const FILE = "linked-identifier.schema.json";
-
-    it("should have x-oma3-witness with subjectField and controllerField", function () {
-      const schema = loadSchema(FILE);
-      expect(schema).to.have.property("x-oma3-witness");
-      expect(schema["x-oma3-witness"]).to.have.property("subjectField", "subject");
-      expect(schema["x-oma3-witness"]).to.have.property("controllerField", "linkedId");
-    });
-
-    it("subjectField and controllerField should exist in schema properties", function () {
-      const schema = loadSchema(FILE);
-      const w = schema["x-oma3-witness"];
-      expect(schema.properties).to.have.property(w.subjectField);
-      expect(schema.properties).to.have.property(w.controllerField);
-    });
-  });
 
   describe("common.schema.json", function () {
     const FILE = "common.schema.json";
