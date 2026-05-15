@@ -42,17 +42,17 @@
     },
     "subject": {
       "type": "string",
-      "title": "Review Subject",
+      "title": "Service ID",
       "format": "did",
       "pattern": "^did:[a-z0-9]+:.+$",
-      "description": "DID of the thing being reviewed.",
+      "description": "ID of the service you are reviewing.",
       "maxLength": 256,
-      "x-oma3-did-methods": ["web", "pkh", "key"]
+      "x-oma3-did-methods": ["web", "pkh", "jwk"]
     },
     "version": {
       "$ref": "common.schema.json#/$defs/Version",
-      "title": "Subject Version",
-      "description": "Version of the reviewed subject (e.g., app or API version)."
+      "title": "Version",
+      "description": "Version of the service being reviewed (e.g., app or API version)."
     },
     "ratingValue": {
       "type": "integer",
@@ -80,11 +80,13 @@
     "proofs": {
       "type": "array",
       "title": "Proofs",
-      "description": "Array of cryptographic proofs demonstrating the reviewer used the service. Use proofPurpose='commercial-tx' for user review attestations.",
+      "description": "One or more proofs that demonstrate the reviewer used the service.",
       "items": {
         "$ref": "common.schema.json#/$defs/Proof"
       },
-      "minItems": 1
+      "minItems": 1,
+      "x-oma3-proof-purpose": "commercial-tx",
+      "x-oma3-proof-types": ["x402-receipt", "x402-offer", "tx-interaction", "tx-encoded-value"]
     },
     "issuedAt": {
       "type": "integer",

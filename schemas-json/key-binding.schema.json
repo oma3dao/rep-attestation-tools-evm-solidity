@@ -39,22 +39,22 @@
     "attester": {
       "type": "string",
       "title": "Attester ID",
-      "description": "DID or address of the entity authorizing this key binding.",
+      "description": "DID or address of the service authorizing this key binding.",
       "maxLength": 128,
       "x-oma3-skip-reason": "eas"
     },
     "subject": {
       "type": "string",
-      "title": "Subject ID",
+      "title": "Service ID",
       "format": "did",
       "pattern": "^did:[a-z0-9]+:.+$",
-      "description": "DID to which this key is bound.",
+      "description": "ID of the service that is authorizing the Key ID.",
       "maxLength": 256,
-      "x-oma3-did-methods": ["web", "pkh", "key", "handle"]
+      "x-oma3-did-methods": ["web", "pkh", "jwk"]
     },
     "keyId": {
       "type": "string",
-      "title": "Key Identifier",
+      "title": "Key ID",
       "format": "did",
       "pattern": "^did:[a-z0-9]+:.+$",
       "description": "DID representing this key. If using did:key or did:pkh:eip155, publicKeyJwk is optional.",
@@ -77,8 +77,8 @@
     },
     "keyPurpose": {
       "type": "array",
-      "title": "Key Purpose",
-      "description": "Permitted W3C DID Core verification relationships for this key. A key should not be used for both signing and encryption — use separate keys for each purpose.",
+      "title": "Authorized Use",
+      "description": "What the key is authorized to do based on the W3C DID Core specification. A key should not be used for both signing and encryption.",
       "items": {
         "type": "string",
         "minLength": 1,
@@ -115,32 +115,35 @@
     "proofs": {
       "type": "array",
       "title": "Proofs",
-      "description": "Array of cryptographic proofs demonstrating the subject's control over the key. Use proofPurpose='shared-control' for key binding attestations.",
+      "description": "One or more proofs that demonstrate the service's authorization of the key.",
       "items": {
         "$ref": "common.schema.json#/$defs/Proof"
       },
-      "minItems": 1
+      "minItems": 1,
+      "x-oma3-proof-purpose": "shared-control",
+      "x-oma3-proof-types": ["evidence-pointer", "pop-eip712", "pop-jws", "tx-encoded-value"]
     },
     "issuedAt": {
       "type": "integer",
       "minimum": 0,
       "title": "Issued Date",
-      "description": "Unix timestamp (in seconds) when the key binding was issued.",
+      "description": "Time the key binding was issued. Default is current time.",
       "x-oma3-subtype": "timestamp",
-      "x-oma3-default": "current-timestamp"
+      "x-oma3-auto-default": "current-timestamp"
     },
     "effectiveAt": {
       "type": "integer",
       "minimum": 0,
       "title": "Effective Date",
-      "description": "Unix timestamp (in seconds) when the key binding becomes effective.",
+      "description": "Time the key binding becomes effective. Default is current time.",
       "x-oma3-subtype": "timestamp",
-      "x-oma3-default": "current-timestamp"
+      "x-oma3-auto-default": "current-timestamp"
     },
     "expiresAt": {
       "type": "integer",
       "minimum": 0,
       "title": "Expiration Date",
+      "description": "Time the key binding expires. Default is no expiration.",
       "x-oma3-subtype": "timestamp"
     }
   },

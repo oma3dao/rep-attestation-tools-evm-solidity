@@ -35,38 +35,30 @@
     },
     "subject": {
       "type": "string",
-      "title": "Subject ID",
+      "title": "Primary ID",
       "format": "did",
       "pattern": "^did:[a-z0-9]+:.+$",
-      "description": "DID of the identity initiating the link (e.g., did:pkh for wallets, did:web for domains, did:handle for social accounts, did:key for keys).",
+      "description": "Your primary identity initiating the link (e.g., did:pkh for wallets, did:web for domains, did:handle for social accounts, did:key for keys).",
       "maxLength": 256,
-      "x-oma3-did-methods": ["handle", "web", "pkh", "key"],
+      "x-oma3-did-methods": ["handle", "web", "pkh", "jwk", "key"],
       "x-oma3-handle-platforms": ["twitter", "github", "discord", "telegram", "lens", "farcaster"]
     },
     "linkedId": {
       "type": "string",
-      "title": "Linked Identifier",
+      "title": "Linked ID",
       "format": "did",
       "pattern": "^did:[a-z0-9]+:.+$",
-      "description": "DID of the identity being linked (e.g., did:handle for social accounts, did:web for domains, did:pkh for wallets, did:key for keys). The DID method encodes the platform/type internally.",
+      "description": "The identity you want to link to your primary ID (e.g., did:handle for social accounts, did:web for domains, did:pkh for wallets, did:key for keys).",
       "maxLength": 256,
-      "x-oma3-did-methods": ["handle", "web", "pkh", "key"],
+      "x-oma3-did-methods": ["handle", "web", "pkh", "jwk", "key"],
       "x-oma3-handle-platforms": ["twitter", "github", "discord", "telegram", "lens", "farcaster"]
     },
     "method": {
       "type": "string",
       "title": "Verification Method",
-      "description": "Verification method used by the attester to confirm the subject's control of the linkedId. Use 'proof' for cryptographic proofs (pop-eip712, pop-jwt, evidence-pointer). Platform authority or URL-based evidence may be used to prove control of did:handle identifiers. Custom methods are permitted.",
+      "description": "How to verify the link. Use 'proof' if there is public ownership evidence like a DNS entry or social post. If you are an authorized attester and verified the link manually use 'manual'.",
       "maxLength": 64,
-      "x-oma3-enum": [
-        "proof",
-        "http-file",
-        "dns-txt",
-        "email-challenge",
-        "social-post",
-        "manual",
-        "oauth"
-      ]
+      "enum": ["proof", "manual"]
     },
     "revoked": {
       "type": "boolean",
@@ -78,33 +70,35 @@
     "proofs": {
       "type": "array",
       "title": "Proofs",
-      "description": "Array of cryptographic proofs demonstrating the subject's control over the linked identifier. Use proofPurpose='shared-control' for linked identifier attestations.",
+      "description": "One or more proofs that demonstrate the two linked IDs have the same ownership.",
       "items": {
         "$ref": "common.schema.json#/$defs/Proof"
       },
-      "minItems": 1
+      "minItems": 1,
+      "x-oma3-proof-purpose": "shared-control",
+      "x-oma3-proof-types": ["evidence-pointer", "pop-eip712", "pop-jws", "tx-encoded-value"]
     },
     "issuedAt": {
       "type": "integer",
       "minimum": 0,
       "title": "Issued Date",
-      "description": "Unix timestamp (in seconds) when the attestation was issued. Default is the current time.",
+      "description": "Time the attestation was issued. Default is the current time.",
       "x-oma3-subtype": "timestamp",
-      "x-oma3-default": "current-timestamp"
+      "x-oma3-auto-default": "current-timestamp"
     },
     "effectiveAt": {
       "type": "integer",
       "minimum": 0,
       "title": "Effective Date",
-      "description": "Optional Unix timestamp (in seconds) when the assessment becomes effective. Default is the current time.",
+      "description": "Time the assessment becomes effective. Default is the current time.",
       "x-oma3-subtype": "timestamp",
-      "x-oma3-default": "current-timestamp"
+      "x-oma3-auto-default": "current-timestamp"
     },
     "expiresAt": {
       "type": "integer",
       "minimum": 0,
       "title": "Expiration Date",
-      "description": "Unix timestamp (in seconds) after which the assessment expires. Leave empty if the assessment does not expire.",
+      "description": "Time the assessment expires. Default is no expiration.",
       "x-oma3-subtype": "timestamp"
     }
   },

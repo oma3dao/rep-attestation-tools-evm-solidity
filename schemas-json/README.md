@@ -43,14 +43,14 @@ Specifies the semantic meaning of a field to control UI rendering and validation
     "type": "integer",
     "title": "Issued Date",
     "x-oma3-subtype": "timestamp",
-    "x-oma3-default": "current-timestamp"
+    "x-oma3-auto-default": "current-timestamp"
   }
 }
 ```
 
 **Schemas using this field:** All schemas (timestamp fields: issuedAt, effectiveAt, expiresAt); user-review, security-assessment (version — semver)
 
-### `x-oma3-default`
+### `x-oma3-auto-default`
 
 Specifies auto-generation behavior for field defaults. Supported values:
 
@@ -67,7 +67,7 @@ Specifies auto-generation behavior for field defaults. Supported values:
     "type": "integer",
     "title": "Issued Date",
     "x-oma3-subtype": "timestamp",
-    "x-oma3-default": "current-timestamp"
+    "x-oma3-auto-default": "current-timestamp"
   }
 }
 ```
@@ -220,7 +220,7 @@ Use this instead of standard JSON Schema `enum` when you want:
       "type": "integer",
       "title": "Issued Date",
       "x-oma3-subtype": "timestamp",
-      "x-oma3-default": "current-timestamp"
+      "x-oma3-auto-default": "current-timestamp"
     },
     "expiresAt": {
       "type": "integer",
