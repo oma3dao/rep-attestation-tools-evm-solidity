@@ -12,7 +12,7 @@
         "proofType": {
           "type": "string",
           "description": "Identifies the proof format and verification method.",
-          "enum": ["pop-eip712", "pop-jws", "tx-encoded-value", "x402-receipt", "tx-interaction", "evidence-pointer"]
+          "enum": ["pop-eip712", "pop-jws", "tx-encoded-value", "x402-receipt", "x402-offer", "tx-interaction", "evidence-pointer"]
         },
         "proofPurpose": {
           "type": "string",
@@ -124,7 +124,7 @@
         },
         {
           "title": "x402 Receipt Proof",
-          "description": "Server-signed payment receipt. The JWS payload contains proofPurpose within the signed content.",
+          "description": "Server-signed receipt proving a commercial transaction occurred. Stored as the complete x402 artifact with format discriminator.",
           "properties": {
             "proofType": { "const": "x402-receipt" },
             "proofPurpose": {
@@ -132,9 +132,125 @@
               "description": "x402 receipts are always for commercial transactions."
             },
             "proofObject": {
-              "type": "string",
-              "pattern": "^[A-Za-z0-9_-]+\\.[A-Za-z0-9_-]+\\.[A-Za-z0-9_-]*$",
-              "description": "Compact JWS produced by the x402 service. The JWS payload MUST include 'oma3_proof_purpose' ('commercial-tx'), and embed the offer (Payment Requirements slice) and client payment payload (including txRef) per the x402 spec."
+              "description": "Complete x402 signed receipt as returned by the service. The 'format' field discriminates between EIP-712 and JWS.",
+              "type": "object",
+              "required": ["format", "signature"],
+              "properties": {
+                "format": {
+                  "type": "string",
+                  "enum": ["eip712", "jws"],
+                  "description": "Signature format. Determines interpretation of other fields."
+                },
+                "payload": {
+                  "type": "object",
+                  "description": "Receipt payload fields (required for EIP-712, omitted for JWS since payload is embedded in the JWS compact string). Contains: version, network, resourceUrl, payer, issuedAt, and optionally transaction."
+                },
+                "signature": {
+                  "type": "string",
+                  "description": "For EIP-712: hex-encoded ECDSA signature (0x-prefixed, 65 bytes). For JWS: compact serialization string (header.payload.signature)."
+                }
+              },
+              "oneOf": [
+                {
+                  "title": "EIP-712 format",
+                  "properties": {
+                    "format": { "const": "eip712" },
+                    "payload": {
+                      "type": "object",
+                      "required": ["version", "network", "resourceUrl", "payer", "issuedAt"],
+                      "properties": {
+                        "version": { "type": "integer", "description": "Receipt payload schema version (currently 1)." },
+                        "network": { "type": "string", "description": "CAIP-2 chain identifier (e.g., 'eip155:8453')." },
+                        "resourceUrl": { "type": "string", "description": "The paid resource URL." },
+                        "payer": { "type": "string", "description": "Payer wallet address." },
+                        "issuedAt": { "type": "integer", "description": "Unix timestamp when receipt was issued." },
+                        "transaction": { "type": "string", "description": "Optional blockchain transaction hash. Empty string if omitted." }
+                      }
+                    },
+                    "signature": { "type": "string", "pattern": "^0x[a-fA-F0-9]+$" }
+                  },
+                  "required": ["format", "payload", "signature"]
+                },
+                {
+                  "title": "JWS format",
+                  "properties": {
+                    "format": { "const": "jws" },
+                    "signature": {
+                      "type": "string",
+                      "pattern": "^[A-Za-z0-9_-]+\\.[A-Za-z0-9_-]+\\.[A-Za-z0-9_-]*$",
+                      "description": "JWS compact serialization containing the receipt payload."
+                    }
+                  },
+                  "required": ["format", "signature"]
+                }
+              ]
+            }
+          }
+        },
+        {
+          "title": "x402 Offer Proof",
+          "description": "Server-signed offer proving a service committed to specific commercial terms prior to payment.",
+          "properties": {
+            "proofType": { "const": "x402-offer" },
+            "proofPurpose": {
+              "const": "commercial-tx",
+              "description": "x402 offers are always for commercial transactions."
+            },
+            "proofObject": {
+              "description": "Complete x402 signed offer as returned by the service. The 'format' field discriminates between EIP-712 and JWS.",
+              "type": "object",
+              "required": ["format", "signature"],
+              "properties": {
+                "format": {
+                  "type": "string",
+                  "enum": ["eip712", "jws"],
+                  "description": "Signature format. Determines interpretation of other fields."
+                },
+                "payload": {
+                  "type": "object",
+                  "description": "Offer payload fields (required for EIP-712, omitted for JWS). Contains: version, resourceUrl, scheme, network, asset, payTo, amount, and optionally validUntil."
+                },
+                "signature": {
+                  "type": "string",
+                  "description": "For EIP-712: hex-encoded ECDSA signature (0x-prefixed, 65 bytes). For JWS: compact serialization string (header.payload.signature)."
+                }
+              },
+              "oneOf": [
+                {
+                  "title": "EIP-712 format",
+                  "properties": {
+                    "format": { "const": "eip712" },
+                    "payload": {
+                      "type": "object",
+                      "required": ["version", "resourceUrl", "scheme", "network", "asset", "payTo", "amount"],
+                      "properties": {
+                        "version": { "type": "integer", "description": "Offer payload schema version (currently 1)." },
+                        "resourceUrl": { "type": "string", "description": "The paid resource URL." },
+                        "scheme": { "type": "string", "description": "Payment scheme identifier (e.g., 'exact')." },
+                        "network": { "type": "string", "description": "CAIP-2 chain identifier (e.g., 'eip155:8453')." },
+                        "asset": { "type": "string", "description": "Token contract address or 'native'." },
+                        "payTo": { "type": "string", "description": "Recipient wallet address." },
+                        "amount": { "type": "string", "description": "Required payment amount." },
+                        "validUntil": { "type": "integer", "description": "Unix timestamp when the offer expires. 0 if unused." }
+                      }
+                    },
+                    "signature": { "type": "string", "pattern": "^0x[a-fA-F0-9]+$" }
+                  },
+                  "required": ["format", "payload", "signature"]
+                },
+                {
+                  "title": "JWS format",
+                  "properties": {
+                    "format": { "const": "jws" },
+                    "signature": {
+                      "type": "string",
+                      "pattern": "^[A-Za-z0-9_-]+\\.[A-Za-z0-9_-]+\\.[A-Za-z0-9_-]*$",
+                      "description": "JWS compact serialization containing the offer payload."
+                    }
+                  },
+                  "required": ["format", "signature"]
+                }
+              ]
             }
           }
         },

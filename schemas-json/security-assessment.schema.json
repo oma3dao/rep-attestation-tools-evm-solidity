@@ -47,12 +47,12 @@
     },
     "subject": {
       "type": "string",
-      "title": "Subject ID",
+      "title": "Service ID",
       "format": "did",
       "pattern": "^did:[a-z0-9]+:.+$",
-      "description": "ID of the assessed application/contract/service. Select an ID type below and enter the proper identity.",
+      "description": "ID of the service being assessed. Select an ID type below and enter the proper identity.",
       "maxLength": 256,
-      "x-oma3-did-methods": ["web", "pkh", "key"]
+      "x-oma3-did-methods": ["web", "pkh", "jwk"]
     },
     "organization": {
       "type": "string",
@@ -77,7 +77,7 @@
     "payload": {
       "type": "object",
       "title": "Assessment Payload",
-      "description": "Assessment details. Evolvable without changing the envelope. When stored on-chain via EAS, this object is JSON-stringified.",
+      "description": "Assessment details. Always stored as a JSON-stringified object. Evolvable without changing the envelope.",
       "x-oma3-render": "expanded",
       "properties": {
         "assessmentKind": {
@@ -102,14 +102,14 @@
               "type": "integer",
               "minimum": 0,
               "title": "Assessment Start Time",
-              "description": "Unix timestamp (in seconds) for when the assessment began. OK to leave empty.",
+              "description": "Time the assessment began. OK to leave empty.",
               "x-oma3-subtype": "timestamp"
             },
             "end": {
               "type": "integer",
               "minimum": 0,
               "title": "Assessment End Time",
-              "description": "Unix timestamp (in seconds) for when the assessment completed. OK to leave empty.",
+              "description": "Time the assessment completed. OK to leave empty.",
               "x-oma3-subtype": "timestamp"
             }
           },
@@ -211,23 +211,23 @@
       "type": "integer",
       "minimum": 0,
       "title": "Issued Date",
-      "description": "Unix timestamp (in seconds) when the attestation was issued. Default is the current time.",
+      "description": "Time the attestation was issued. Default is the current time.",
       "x-oma3-subtype": "timestamp",
-      "x-oma3-default": "current-timestamp"
+      "x-oma3-auto-default": "current-timestamp"
     },
     "effectiveAt": {
       "type": "integer",
       "minimum": 0,
       "title": "Effective Date",
-      "description": "Optional Unix timestamp (in seconds) when the assessment becomes effective. Default is the current time.",
+      "description": "Time the assessment becomes effective. Default is the current time.",
       "x-oma3-subtype": "timestamp",
-      "x-oma3-default": "current-timestamp"
+      "x-oma3-auto-default": "current-timestamp"
     },
     "expiresAt": {
       "type": "integer",
       "minimum": 0,
       "title": "Expiration Date",
-      "description": "Unix timestamp (in seconds) after which the assessment expires. Leave empty if the assessment does not expire.",
+      "description": "Time the assessment expires. Default is no expiration.",
       "x-oma3-subtype": "timestamp"
     }
   },

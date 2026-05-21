@@ -143,23 +143,23 @@ On success, outputs the transaction hash, block confirmation, and the new attest
 
 Schema definitions live in `schemas-json/`. For the full authoring guide — OMA3 extensions (`x-oma3-*`), best practices, and example structures — see [schemas-json/README.md](schemas-json/README.md).
 
-## Working with EAS Schemas on OMAchain
+## Working with EAS Schemas on OMAChain
 
-This repository provides tools for generating and deploying schema definitions for the Ethereum Attestation Service (EAS) on OMAchain Testnet.
+This repository provides tools for generating and deploying schema definitions for the Ethereum Attestation Service (EAS) on OMAChain Testnet.
 
-### Getting OMAchain Testnet Tokens
+### Getting OMAChain Testnet Tokens
 
-To deploy or test on OMAchain Testnet, you will need testnet tokens for gas fees. You can get free OMAchain testnet tokens from the official faucet:
+To deploy or test on OMAChain Testnet, you will need testnet tokens for gas fees. You can get free OMAChain testnet tokens from the official faucet:
 
 - Go to [https://faucet.testnet.chain.oma3.org/](https://faucet.testnet.chain.oma3.org/)
 - Enter your wallet address and request tokens
-- Use these tokens to pay for transactions on OMAchain Testnet
+- Use these tokens to pay for transactions on OMAChain Testnet
 
 ### Generated Schema File Naming Conventions
 
 Generated schema files use the attestation framework name as their suffix, not the target chain. This is because the schema string and revocable flag are derived from the JSON Schema definition and are the same regardless of which chain the schema is deployed to.
 
-- **EAS schemas**: `[name].eas.json` — for the Ethereum Attestation Service (used on OMAchain, Base, Ethereum, Arbitrum, etc.)
+- **EAS schemas**: `[name].eas.json` — for the Ethereum Attestation Service (used on OMAChain, Base, Ethereum, Arbitrum, etc.)
 
 Future attestation frameworks (e.g., Solana) would follow the same pattern: `[name].solana.json`.
 
@@ -194,10 +194,10 @@ The `revocable` flag is automatically detected from the JSON schema. If the sche
 To deploy a schema to the EAS registry, use the `deploy-eas-schema` task:
 
 ```bash
-# Deploy to OMAchain testnet (no resolver - server-side validation)
+# Deploy to OMAChain testnet (no resolver - server-side validation)
 npx hardhat deploy-eas-schema --file generated/Certification.eas.json --network omachainTestnet
 
-# Deploy to OMAchain mainnet (no resolver)
+# Deploy to OMAChain mainnet (no resolver)
 npx hardhat deploy-eas-schema --file generated/Certification.eas.json --network omachainMainnet
 
 # Deploy to external chains WITH fee resolver (Base, Ethereum, Arbitrum, etc.)
@@ -257,8 +257,8 @@ This script will:
 Verify the update with `git diff src/config/schemas.ts` — look for changes to the chain-specific UID and block number entries.
 
 **Important:** The schema UIDs and block numbers are stored per chain ID:
-- `66238` = OMAchain Testnet
-- `6623` = OMAchain Mainnet
+- `66238` = OMAChain Testnet
+- `6623` = OMAChain Mainnet
 
 #### Step 4: Update App-Registry Frontend Schemas (if applicable)
 

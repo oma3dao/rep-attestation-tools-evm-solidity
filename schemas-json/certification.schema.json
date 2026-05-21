@@ -39,39 +39,39 @@
     },
     "subject": {
       "type": "string",
-      "title": "Subject ID",
+      "title": "Recipient ID",
       "format": "did",
       "pattern": "^did:[a-z0-9]+:.+$",
-      "description": "DID of the product, system, or organization being certified.",
+      "description": "ID of the thing or entity being certified. For IDs not based on DID, use did:web:<product path>",
       "maxLength": 256,
-      "x-oma3-did-methods": ["web", "pkh", "key"]
+      "x-oma3-did-methods": ["web", "pkh", "jwk"]
     },
     "organization": {
       "type": "string",
       "title": "Organization",
       "format": "did",
       "pattern": "^did:[a-z0-9]+:.+$",
-      "description": "DID of the parent organization that owns or governs the certified subject. For example, when certifying did:web:example.com:service:api, set organization to did:web:example.com. Leave empty when certifying an organization itself.",
+      "description": "DID of the parent organization that owns or governs the certification recipient. For example, when certifying did:web:example.com:service:api, set organization to did:web:example.com. Leave empty when certifying an organization itself.",
       "maxLength": 256,
       "x-oma3-did-methods": ["web", "pkh"]
     },
     "version": {
       "type": "string",
       "title": "Software Version",
-      "description": "Software version of the certified subject.",
+      "description": "Software version of the certification recipient, if applicable.",
       "maxLength": 50
     },
     "versionHW": {
       "type": "string",
       "title": "Hardware Version",
-      "description": "Hardware version of the certified subject, if applicable.",
+      "description": "Hardware version of the certification recipient, if applicable.",
       "maxLength": 50
     },
     "subjectURI": {
       "type": "string",
       "format": "uri",
       "title": "Subject Informational URI",
-      "description": "Optional URI controlled by the subject that provides mutable, human-readable metadata.",
+      "description": "Optional URI that provides mutable, human-readable metadata about the certification recipient.",
       "maxLength": 256
     },
     "programID": {
@@ -92,10 +92,10 @@
     },
     "assessor": {
       "type": "string",
-      "title": "Assessor DID",
+      "title": "Assessor ID",
       "format": "did",
       "pattern": "^did:[a-z0-9]+:.+$",
-      "description": "DID of the authorized assessor (test lab, auditor) who evaluated the subject.",
+      "description": "ID of the authorized assessor (test lab, auditor) who evaluated the service.",
       "maxLength": 256,
       "x-oma3-did-methods": ["web", "pkh"]
     },
@@ -127,8 +127,8 @@
     },
     "payload": {
       "type": "object",
-      "title": "Certification Payload",
-      "description": "Extended certification details. Evolvable without changing the envelope. When stored on-chain via EAS, this object is JSON-stringified.",
+      "title": "Certification Metadata",
+      "description": "Extended certification details. Always stored as a JSON-stringified object.",
       "x-oma3-skip-reason": "unused",
       "additionalProperties": true
     },
@@ -147,21 +147,21 @@
     "issuedAt": {
       "type": "integer",
       "title": "Issued Date",
-      "description": "Unix timestamp (in seconds) when the certification was issued by the certification body.",
+      "description": "When the certification was issued by the certification body. Default is the current time.",
       "x-oma3-subtype": "timestamp",
-      "x-oma3-default": "current-timestamp"
+      "x-oma3-auto-default": "current-timestamp"
     },
     "effectiveAt": {
       "type": "integer",
       "title": "Effective Date",
-      "description": "Unix timestamp (in seconds) when the certification becomes effective.",
+      "description": "Time the certification becomes effective. Default is the current time.",
       "x-oma3-subtype": "timestamp",
-      "x-oma3-default": "current-timestamp"
+      "x-oma3-auto-default": "current-timestamp"
     },
     "expiresAt": {
       "type": "integer",
       "title": "Expiration Date",
-      "description": "Optional expiration timestamp (in seconds).",
+      "description": "Time the certification expires. Default is no expiration",
       "x-oma3-subtype": "timestamp"
     }
   },

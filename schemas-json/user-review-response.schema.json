@@ -43,8 +43,7 @@
       "pattern": "^did:[a-z0-9]+:.+$",
       "description": "DID of the original reviewer being responded to.",
       "maxLength": 256,
-      "x-oma3-did-methods": ["web", "pkh", "key", "handle"],
-      "x-oma3-handle-platforms": ["twitter", "github", "discord", "telegram", "lens", "farcaster"]
+      "x-oma3-did-methods": ["pkh"]
     },
     "refUID": {
       "type": "string",
@@ -62,9 +61,9 @@
       "type": "integer",
       "minimum": 0,
       "title": "Issued Date",
-      "description": "Unix timestamp (in seconds) when the response was issued. Default is the current time.",
+      "description": "Time the response is issued. Default is the current time.",
       "x-oma3-subtype": "timestamp",
-      "x-oma3-default": "current-timestamp",
+      "x-oma3-auto-default": "current-timestamp",
       "x-oma3-skip-reason": "eas"
     }
   },

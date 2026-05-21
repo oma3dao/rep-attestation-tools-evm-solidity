@@ -43,14 +43,14 @@ Specifies the semantic meaning of a field to control UI rendering and validation
     "type": "integer",
     "title": "Issued Date",
     "x-oma3-subtype": "timestamp",
-    "x-oma3-default": "current-timestamp"
+    "x-oma3-auto-default": "current-timestamp"
   }
 }
 ```
 
 **Schemas using this field:** All schemas (timestamp fields: issuedAt, effectiveAt, expiresAt); user-review, security-assessment (version — semver)
 
-### `x-oma3-default`
+### `x-oma3-auto-default`
 
 Specifies auto-generation behavior for field defaults. Supported values:
 
@@ -67,7 +67,7 @@ Specifies auto-generation behavior for field defaults. Supported values:
     "type": "integer",
     "title": "Issued Date",
     "x-oma3-subtype": "timestamp",
-    "x-oma3-default": "current-timestamp"
+    "x-oma3-auto-default": "current-timestamp"
   }
 }
 ```
@@ -185,40 +185,6 @@ Use this instead of standard JSON Schema `enum` when you want:
 
 **Schemas using this field:** key-binding (keyPurpose items), linked-identifier (method), security-assessment (payload.assessmentKind)
 
-### `x-oma3-witness`
-
-Declares that a schema should trigger a Controller Witness API call after a successful attestation. This is a **top-level** schema extension (not on a property) that tells the frontend which fields map to the witness API's `subject` and `controller` parameters.
-
-When present, the frontend automatically calls the Controller Witness API as a non-blocking, fire-and-forget step after the attestation is submitted on-chain. The witness creates an immutable record that a trusted observer saw the controller assertion (DNS TXT or did.json) at a specific point in time. This solves the mutable evidence problem — if the subject later removes their DNS record, the witness attestation preserves the proof.
-
-**Fields:**
-- `subjectField` — name of the property containing the subject DID (e.g., `"subject"`)
-- `controllerField` — name of the property containing the controller DID (e.g., `"keyId"` for key-binding, `"linkedId"` for linked-identifier)
-
-**Example:**
-```json
-{
-  "title": "Key Binding",
-  "type": "object",
-  "x-oma3-witness": {
-    "subjectField": "subject",
-    "controllerField": "keyId"
-  },
-  "properties": {
-    "subject": { "type": "string", "title": "Subject ID" },
-    "keyId": { "type": "string", "title": "Key Identifier" }
-  }
-}
-```
-
-**Currently enabled on:**
-- **Key Binding** — `controllerField: "keyId"`
-- **Linked Identifier** — `controllerField: "linkedId"`
-
-**Notes:**
-- The `x-oma3-witness` field does not affect the EAS schema string or on-chain data — it is purely frontend metadata.
-- See `developer-docs/docs/api/controller-witness.md` for the full API reference.
-
 ## Schema Design Best Practices
 
 1. **Use descriptive titles** - Field titles appear as labels in UIs, so make them clear and self-explanatory
@@ -254,7 +220,7 @@ When present, the frontend automatically calls the Controller Witness API as a n
       "type": "integer",
       "title": "Issued Date",
       "x-oma3-subtype": "timestamp",
-      "x-oma3-default": "current-timestamp"
+      "x-oma3-auto-default": "current-timestamp"
     },
     "expiresAt": {
       "type": "integer",
