@@ -1,0 +1,169 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://reputation.omatrust.org/schemas/certification/attestation/1.3.0.json",
+  "title": "Certification",
+  "description": "Certification bodies use this attestation when a subject passes certification.",
+  "type": "object",
+  "keywords": ["certification", "compliance", "attestation", "program", "assessment", "reputation"],
+  "required": [
+    "attester",
+    "subject",
+    "programID",
+    "assessor",
+    "issuedAt"
+  ],
+  "properties": {
+    "@context": {
+      "type": "string",
+      "description": "Optional JSON-LD context URI for semantic processing.",
+      "default": "https://oma3.org/context.jsonld",
+      "maxLength": 256,
+      "x-oma3-skip-reason": "metadata"
+    },
+    "@type": {
+      "type": "string",
+      "description": "Semantic type identifier, typically 'Certification'.",
+      "default": "Certification",
+      "maxLength": 100,
+      "x-oma3-skip-reason": "metadata"
+    },
+    "attester": {
+      "type": "string",
+      "title": "Certification Body ID",
+      "format": "did",
+      "pattern": "^did:[a-z0-9]+:.+$",
+      "description": "DID of the Certification Body issuing the certification.",
+      "maxLength": 256,
+      "x-oma3-did-methods": ["web", "pkh", "key"],
+      "x-oma3-skip-reason": "eas"
+    },
+    "subject": {
+      "type": "string",
+      "title": "Recipient ID",
+      "format": "did",
+      "pattern": "^did:[a-z0-9]+:.+$",
+      "description": "ID of the thing or entity being certified. For IDs not based on DID, use did:web:<product path>",
+      "maxLength": 256,
+      "x-oma3-did-methods": ["web", "pkh", "jwk"]
+    },
+    "organization": {
+      "type": "string",
+      "title": "Organization",
+      "format": "did",
+      "pattern": "^did:[a-z0-9]+:.+$",
+      "description": "DID of the parent organization that owns or governs the certification recipient. For example, when certifying did:web:example.com:service:api, set organization to did:web:example.com. Leave empty when certifying an organization itself.",
+      "maxLength": 256,
+      "x-oma3-did-methods": ["web", "pkh"]
+    },
+    "version": {
+      "type": "string",
+      "title": "Software Version",
+      "description": "Software version of the certification recipient, if applicable.",
+      "maxLength": 50
+    },
+    "versionHW": {
+      "type": "string",
+      "title": "Hardware Version",
+      "description": "Hardware version of the certification recipient, if applicable.",
+      "maxLength": 50
+    },
+    "subjectURI": {
+      "type": "string",
+      "format": "uri",
+      "title": "Subject Informational URI",
+      "description": "Optional URI that provides mutable, human-readable metadata about the certification recipient.",
+      "maxLength": 256
+    },
+    "programID": {
+      "type": "string",
+      "title": "Program ID",
+      "format": "did",
+      "pattern": "^did:[a-z0-9]+:.+$",
+      "description": "DID of the certification program under which this certification was issued. Program release version should be included in the DID.",
+      "maxLength": 256,
+      "x-oma3-did-methods": ["web"]
+    },
+    "programURI": {
+      "type": "string",
+      "format": "uri",
+      "title": "Program Informational URI",
+      "description": "Optional URI for mutable, human-readable certification program info.",
+      "maxLength": 256
+    },
+    "assessor": {
+      "type": "string",
+      "title": "Assessor ID",
+      "format": "did",
+      "pattern": "^did:[a-z0-9]+:.+$",
+      "description": "ID of the authorized assessor (test lab, auditor) who evaluated the service.",
+      "maxLength": 256,
+      "x-oma3-did-methods": ["web", "pkh"]
+    },
+    "assessorURI": {
+      "type": "string",
+      "format": "uri",
+      "title": "Assessor Informational URI",
+      "description": "Optional URI with human-readable info about the assessor (e.g., homepage, credentials).",
+      "maxLength": 256
+    },
+    "certificationLevel": {
+      "type": "string",
+      "title": "Certification Level",
+      "description": "Optional classification level of certification (e.g., 'Gold', 'Level 2').",
+      "maxLength": 256
+    },
+    "outcome": {
+      "$ref": "common.schema.json#/$defs/Outcome"
+    },
+    "reportURI": {
+      "type": "string",
+      "format": "uri",
+      "title": "Report URI",
+      "description": "Optional URI to the certification report or assessment documentation.",
+      "maxLength": 256
+    },
+    "reportDigest": {
+      "$ref": "common.schema.json#/$defs/ReportDigest"
+    },
+    "payload": {
+      "type": "object",
+      "title": "Certification Metadata",
+      "description": "Extended certification details. Always stored as a JSON-stringified object.",
+      "x-oma3-skip-reason": "unused",
+      "additionalProperties": true
+    },
+    "payloadVersion": {
+      "$ref": "common.schema.json#/$defs/PayloadVersion",
+      "x-oma3-skip-reason": "unused"
+    },
+    "payloadSpecURI": {
+      "$ref": "common.schema.json#/$defs/PayloadSpecURI",
+      "x-oma3-skip-reason": "unused"
+    },
+    "payloadSpecDigest": {
+      "$ref": "common.schema.json#/$defs/PayloadSpecDigest",
+      "x-oma3-skip-reason": "unused"
+    },
+    "issuedAt": {
+      "type": "integer",
+      "title": "Issued Date",
+      "description": "When the certification was issued by the certification body. Default is the current time.",
+      "x-oma3-subtype": "timestamp",
+      "x-oma3-auto-default": "current-timestamp"
+    },
+    "effectiveAt": {
+      "type": "integer",
+      "title": "Effective Date",
+      "description": "Time the certification becomes effective. Default is the current time.",
+      "x-oma3-subtype": "timestamp",
+      "x-oma3-auto-default": "current-timestamp"
+    },
+    "expiresAt": {
+      "type": "integer",
+      "title": "Expiration Date",
+      "description": "Time the certification expires. Default is no expiration",
+      "x-oma3-subtype": "timestamp"
+    }
+  },
+  "additionalProperties": false
+}

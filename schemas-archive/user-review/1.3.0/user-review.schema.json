@@ -1,0 +1,101 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://reputation.omatrust.org/schemas/userreview/attestation/1.3.0.json",
+  "title": "User Review",
+  "description": "A flat schema for structured 1–5 star reviews of tokenized applications or digital services. Designed for onchain attestation and offchain anchoring.",
+  "type": "object",
+  "keywords": [
+    "review",
+    "rating",
+    "feedback",
+    "UX",
+    "app",
+    "attestation",
+    "reputation"
+  ],
+  "required": [
+    "attester",
+    "subject",
+    "ratingValue"
+  ],
+  "properties": {
+    "@context": {
+      "type": "string",
+      "description": "Optional JSON-LD context URI for semantic processing.",
+      "default": "https://oma3.org/context.jsonld",
+      "maxLength": 256,
+      "x-oma3-skip-reason": "metadata"
+    },
+    "@type": {
+      "type": "string",
+      "description": "Semantic type identifier, typically 'UserReview'.",
+      "default": "UserReview",
+      "maxLength": 100,
+      "x-oma3-skip-reason": "metadata"
+    },
+    "attester": {
+      "type": "string",
+      "title": "Attester ID",
+      "description": "Ethereum address or DID of the entity submitting the review.",
+      "maxLength": 128,
+      "x-oma3-skip-reason": "eas"
+    },
+    "subject": {
+      "type": "string",
+      "title": "Service ID",
+      "format": "did",
+      "pattern": "^did:[a-z0-9]+:.+$",
+      "description": "ID of the service you are reviewing.",
+      "maxLength": 256,
+      "x-oma3-did-methods": ["web", "pkh", "jwk"]
+    },
+    "version": {
+      "$ref": "common.schema.json#/$defs/Version",
+      "title": "Version",
+      "description": "Version of the service being reviewed (e.g., app or API version)."
+    },
+    "ratingValue": {
+      "type": "integer",
+      "enum": [1, 2, 3, 4, 5],
+      "title": "Rating",
+      "description": "Numerical rating from 1 (worst) to 5 (best)."
+    },
+    "reviewBody": {
+      "type": "string",
+      "title": "Review",
+      "description": "Free-form text describing your experience or feedback.",
+      "maxLength": 500
+    },
+    "screenshotUrls": {
+      "type": "array",
+      "title": "Screenshots",
+      "description": "Optional screenshots showing the app during review.",
+      "items": {
+        "type": "string",
+        "format": "uri",
+        "maxLength": 256
+      },
+      "maxItems": 10
+    },
+    "proofs": {
+      "type": "array",
+      "title": "Proofs",
+      "description": "One or more proofs that demonstrate the reviewer used the service.",
+      "items": {
+        "$ref": "common.schema.json#/$defs/Proof"
+      },
+      "minItems": 1,
+      "x-oma3-proof-purpose": "commercial-tx",
+      "x-oma3-proof-types": ["x402-receipt", "x402-offer", "tx-interaction", "tx-encoded-value"]
+    },
+    "issuedAt": {
+      "type": "integer",
+      "minimum": 0,
+      "title": "Issued Date",
+      "description": "Timestamp (in seconds) when the review was issued. EAS provides this via attestation timestamp.",
+      "x-oma3-subtype": "timestamp",
+      "x-oma3-skip-reason": "eas"
+    }
+  },
+  "additionalProperties": false
+}

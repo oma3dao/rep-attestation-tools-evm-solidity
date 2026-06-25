@@ -1,0 +1,86 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://reputation.omatrust.org/schemas/controller-witness/attestation/1.0.0.json",
+  "title": "Controller Witness",
+  "description": "An attestation by a trusted third party that witnessed that a key was authorized at a specific point in time with a specific verification method",
+  "type": "object",
+  "keywords": [
+    "witness",
+    "controller",
+    "identity",
+    "did",
+    "attestation",
+    "dns",
+    "verification"
+  ],
+  "required": [
+    "attester",
+    "subject",
+    "controller",
+    "method",
+    "observedAt"
+  ],
+  "properties": {
+    "@context": {
+      "type": "string",
+      "description": "Optional JSON-LD context URI for semantic processing.",
+      "default": "https://oma3.org/context.jsonld",
+      "maxLength": 256,
+      "x-oma3-skip-reason": "metadata"
+    },
+    "@type": {
+      "type": "string",
+      "description": "Semantic type identifier, typically 'ControllerWitness'.",
+      "default": "ControllerWitness",
+      "maxLength": 100,
+      "x-oma3-skip-reason": "metadata"
+    },
+    "attester": {
+      "type": "string",
+      "title": "Attester ID",
+      "description": "DID or address of the witness server that observed the controller assertion.",
+      "maxLength": 128,
+      "x-oma3-skip-reason": "eas"
+    },
+    "subject": {
+      "type": "string",
+      "title": "Authorizer ID",
+      "format": "did",
+      "pattern": "^did:[a-z0-9]+:.+$",
+      "description": "ID of the entity or service that is authorizing the key.",
+      "maxLength": 256,
+      "x-oma3-did-methods": ["web", "pkh", "handle"],
+      "x-oma3-handle-platforms": ["twitter", "github", "discord", "telegram", "lens", "farcaster"]
+    },
+    "controller": {
+      "type": "string",
+      "title": "Key ID",
+      "format": "did",
+      "pattern": "^did:[a-z0-9]+:.+$",
+      "description": "ID of the key being authorized (e.g., did:pkh, did:jwk, or did:key). Most blockchain wallets use did:pkh.",
+      "maxLength": 256,
+      "x-oma3-did-methods": ["pkh", "jwk", "key"]
+    },
+    "method": {
+      "type": "string",
+      "title": "Verification Method",
+      "description": "How the witness verified the key's relationship to the service.",
+      "enum": ["dns-txt", "did-json", "social-profile", "manual"],
+      "x-oma3-enum-descriptions": {
+        "dns-txt": "Key ID was found in a DNS TXT record (e.g., _controllers.example.com)",
+        "did-json": "Key ID was found in /.well-known/did.json",
+        "social-profile": "Key ID was found in a social media profile (bio, pinned post, etc.)",
+        "manual": "Relationship verified manually using a custom mechanism"
+      }
+    },
+    "observedAt": {
+      "type": "integer",
+      "minimum": 0,
+      "title": "Observed At",
+      "description": "When the witness observed the verification. This is the witness's local observation time, not the blockchain block timestamp.",
+      "x-oma3-subtype": "timestamp",
+      "x-oma3-auto-default": "current-timestamp"
+    }
+  },
+  "additionalProperties": false
+}

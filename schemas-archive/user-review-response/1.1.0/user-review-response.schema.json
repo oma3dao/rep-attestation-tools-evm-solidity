@@ -1,0 +1,71 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://reputation.omatrust.org/schemas/user-review-response/attestation/1.1.0.json",
+  "title": "User Review Response",
+  "description": "A response from an app owner or representative to a UserReview attestation. Uses refUID to reference the original review.",
+  "type": "object",
+  "keywords": ["review", "response", "feedback", "reputation", "attestation"],
+  "required": [
+    "attester",
+    "refUID",
+    "responseBody",
+    "issuedAt"
+  ],
+  "properties": {
+    "@context": {
+      "type": "string",
+      "description": "Optional JSON-LD context URI for semantic processing.",
+      "default": "https://oma3.org/context.jsonld",
+      "maxLength": 256,
+      "x-oma3-skip-reason": "metadata"
+    },
+    "@type": {
+      "type": "string",
+      "description": "Semantic type identifier, typically 'UserReviewResponse'.",
+      "default": "UserReviewResponse",
+      "maxLength": 100,
+      "x-oma3-skip-reason": "metadata"
+    },
+    "attester": {
+      "type": "string",
+      "title": "Attester ID",
+      "format": "did",
+      "pattern": "^did:[a-z0-9]+:.+$",
+      "description": "DID of the entity or representative responding to the review.",
+      "maxLength": 256,
+      "x-oma3-did-methods": ["web", "pkh", "key"],
+      "x-oma3-skip-reason": "eas"
+    },
+    "subject": {
+      "type": "string",
+      "title": "Reviewer ID",
+      "format": "did",
+      "pattern": "^did:[a-z0-9]+:.+$",
+      "description": "DID of the original reviewer being responded to.",
+      "maxLength": 256,
+      "x-oma3-did-methods": ["pkh"]
+    },
+    "refUID": {
+      "type": "string",
+      "title": "User Review UID",
+      "description": "The UID of the user review being responded to.",
+      "maxLength": 66
+    },
+    "responseBody": {
+      "type": "string",
+      "title": "Response",
+      "description": "Free-form text containing the response to the review.",
+      "maxLength": 500
+    },
+    "issuedAt": {
+      "type": "integer",
+      "minimum": 0,
+      "title": "Issued Date",
+      "description": "Time the response is issued. Default is the current time.",
+      "x-oma3-subtype": "timestamp",
+      "x-oma3-auto-default": "current-timestamp",
+      "x-oma3-skip-reason": "eas"
+    }
+  },
+  "additionalProperties": false
+}
