@@ -42,7 +42,7 @@
       "pattern": "^did:[a-z0-9]+:.+$",
       "description": "DID of the assessment issuer.",
       "maxLength": 256,
-      "x-oma3-did-methods": ["web", "pkh", "key"],
+      "x-oma3-did-methods": ["web", "pkh", "jwk"],
       "x-oma3-skip-reason": "eas"
     },
     "subject": {
@@ -52,7 +52,7 @@
       "pattern": "^did:[a-z0-9]+:.+$",
       "description": "ID of the service being assessed. Select an ID type below and enter the proper identity.",
       "maxLength": 256,
-      "x-oma3-did-methods": ["web", "pkh", "jwk"]
+      "x-oma3-did-methods": ["web", "pkh", "jwk", "artifact"]
     },
     "organization": {
       "type": "string",

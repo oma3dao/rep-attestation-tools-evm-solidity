@@ -57,9 +57,9 @@
       "title": "Key ID",
       "format": "did",
       "pattern": "^did:[a-z0-9]+:.+$",
-      "description": "ID of the key being authorized (e.g., did:pkh, did:jwk, or did:key). Most blockchain wallets use did:pkh.",
+      "description": "ID of the key being authorized (e.g., did:pkh or did:jwk). Most blockchain wallets use did:pkh.",
       "maxLength": 256,
-      "x-oma3-did-methods": ["pkh", "jwk", "key"]
+      "x-oma3-did-methods": ["pkh", "jwk"]
     },
     "method": {
       "type": "string",
