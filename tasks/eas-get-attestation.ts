@@ -1,6 +1,5 @@
 import { task } from "hardhat/config";
 import { NETWORK_CONTRACTS } from "../hardhat.config";
-import { didToAddress } from "@oma3/omatrust/identity";
 import * as fs from "fs";
 import * as path from "path";
 
@@ -99,6 +98,7 @@ task("eas-get-attestation", "Get attestation details by UID or query by DID")
 
     // Mode 2: Query attestations by DID
     if (taskArgs.did) {
+      const { didToAddress } = await import("@oma3/omatrust/identity");
       const didAddress = didToAddress(taskArgs.did);
       console.log(`\nDID: ${taskArgs.did}`);
       console.log(`DID Address: ${didAddress}`);

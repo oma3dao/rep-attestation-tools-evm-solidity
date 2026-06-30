@@ -47,7 +47,7 @@
       "pattern": "^did:[a-z0-9]+:.+$",
       "description": "ID of the service you are reviewing.",
       "maxLength": 256,
-      "x-oma3-did-methods": ["web", "pkh", "jwk", "artifact"]
+      "x-oma3-did-methods": ["web", "pkh", "jwk"]
     },
     "version": {
       "$ref": "common.schema.json#/$defs/Version",

@@ -1,6 +1,6 @@
 import { task } from "hardhat/config";
 import { ethers } from 'ethers';
-import { calculateSchemaUID, formatSchemaUID } from '../utils/basTools';
+import { calculateSchemaUID, formatSchemaUID } from '../utils/easTools';
 import * as fs from 'fs';
 import * as path from 'path';
 
