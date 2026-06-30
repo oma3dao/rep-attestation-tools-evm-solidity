@@ -1,6 +1,6 @@
 /**
  * Shared helper to run a Hardhat task via CLI and optionally expect an error.
- * Used by generate-bas-object, generate-eas-object, and eas-encode-data task tests.
+ * Used by generate-eas-object and eas-encode-data task tests.
  */
 import { execSync } from "child_process";
 

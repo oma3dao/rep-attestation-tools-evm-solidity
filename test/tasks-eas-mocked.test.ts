@@ -1,5 +1,5 @@
 /**
- * Mock tests for EAS/BAS Hardhat tasks (verify-eas-schema, deploy-eas-schema, deploy-bas-schema).
+ * Mock tests for EAS Hardhat tasks (verify-eas-schema, deploy-eas-schema).
  * We stub getProviderAndSigner and SchemaRegistry.prototype so tasks run without a live chain.
  * No application code is modified; only test file and stubs.
  *
@@ -14,18 +14,14 @@ import * as path from "path";
 const providerModule = require("../utils/provider");
 const signerUtilsModule = require("../tasks/shared/signer-utils");
 const easSdk = require("@ethereum-attestation-service/eas-sdk");
-const basSdk = require("@bnb-attestation-service/bas-sdk");
 
-describe("EAS/BAS tasks (mocked registry and provider)", function () {
+describe("EAS tasks (mocked registry and provider)", function () {
   let originalGetProviderAndSigner: typeof providerModule.getProviderAndSigner;
   let originalGetDeployerSigner: typeof signerUtilsModule.getDeployerSigner;
   let originalEasConnect: any;
   let originalEasGetSchema: any;
   let originalEasRegister: any;
-  let originalBasConnect: any;
-  let originalBasGetSchema: any;
   let originalNetworkName: string;
-  let basDeployedFile: string | null = null;
 
   before(function () {
     // Clean up any leftover test artifacts from a previous crashed run
@@ -41,8 +37,6 @@ describe("EAS/BAS tasks (mocked registry and provider)", function () {
     originalEasConnect = easSdk.SchemaRegistry?.prototype?.connect;
     originalEasGetSchema = easSdk.SchemaRegistry?.prototype?.getSchema;
     originalEasRegister = easSdk.SchemaRegistry?.prototype?.register;
-    originalBasConnect = basSdk.SchemaRegistry?.prototype?.connect;
-    originalBasGetSchema = basSdk.SchemaRegistry?.prototype?.getSchema;
   });
 
   after(function () {
@@ -52,10 +46,6 @@ describe("EAS/BAS tasks (mocked registry and provider)", function () {
       if (originalEasConnect != null) easSdk.SchemaRegistry.prototype.connect = originalEasConnect;
       if (originalEasGetSchema != null) easSdk.SchemaRegistry.prototype.getSchema = originalEasGetSchema;
       if (originalEasRegister != null) easSdk.SchemaRegistry.prototype.register = originalEasRegister;
-    }
-    if (basSdk.SchemaRegistry?.prototype) {
-      if (originalBasConnect != null) basSdk.SchemaRegistry.prototype.connect = originalBasConnect;
-      if (originalBasGetSchema != null) basSdk.SchemaRegistry.prototype.getSchema = originalBasGetSchema;
     }
   });
 
@@ -69,10 +59,6 @@ describe("EAS/BAS tasks (mocked registry and provider)", function () {
     (hre.network as any).name = originalNetworkName;
     providerModule.getProviderAndSigner = originalGetProviderAndSigner;
     signerUtilsModule.getDeployerSigner = originalGetDeployerSigner;
-    if (basDeployedFile && fs.existsSync(basDeployedFile)) {
-      fs.unlinkSync(basDeployedFile);
-      basDeployedFile = null;
-    }
   });
 
   describe("verify-eas-schema", function () {
@@ -786,7 +772,6 @@ describe("EAS/BAS tasks (mocked registry and provider)", function () {
       expect(result).to.equal("0x4694e87ce79dea28a0da0fc1ac21fb164d02232625184010d97c33656dc29873");
     });
   });
-
 
   describe("eas-get-schema", function () {
     it("should complete with mock contract getSchema", async function () {
