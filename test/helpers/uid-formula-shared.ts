@@ -1,7 +1,6 @@
 /**
- * Shared tests for the EAS/BAS schema UID formula (calculateSchemaUID + formatSchemaUID).
- * Both utils/easTools and utils/basTools use the same formula; this helper runs the common cases
- * so we don't duplicate them in two files.
+ * Shared tests for the EAS schema UID formula (calculateSchemaUID + formatSchemaUID).
+ * Used by utils/easTools tests so common cases are not duplicated.
  */
 import { expect } from "chai";
 
@@ -16,7 +15,7 @@ export type FormatSchemaUID = (schemaUID: string) => string;
 
 /**
  * Registers the shared UID formula tests inside the current describe block.
- * Call from utils-easTools.test.ts and utils-basTools.test.ts.
+ * Call from utils-easTools.test.ts.
  */
 export function runSharedUidFormulaTests(
   calculateSchemaUID: CalculateSchemaUID,

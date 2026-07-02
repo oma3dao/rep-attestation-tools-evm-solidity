@@ -4,8 +4,8 @@ import { calculateSchemaUID, formatSchemaUID } from '../utils/easTools';
 import * as fs from 'fs';
 import * as path from 'path';
 
-task("test-schema-uid", "Test the schema UID calculation against BAS reference implementation")
-  .addOptionalParam("file", "Path to the BAS schema JSON file (e.g., generated/Certification.bastest.json)")
+task("test-schema-uid", "Test the schema UID calculation against the EAS reference implementation")
+  .addOptionalParam("file", "Path to the EAS schema JSON file (e.g., generated/Certification.eastest.json)")
   .setAction(async (taskArgs, hre) => {
     let schemaObject;
     let expectedUID;
@@ -40,7 +40,7 @@ task("test-schema-uid", "Test the schema UID calculation against BAS reference i
         }
       }
     } else {
-      // Use BAS example if no file provided
+      // Use documented example if no file provided
       schemaObject = {
         schema: "uint256 schemaId, string msg5, bool isActive, string[] tags, uint256[] scores, string optionalDescription, bool[] statusFlags",
         resolver: "0x0000000000000000000000000000000000000000", // zero address
@@ -48,7 +48,7 @@ task("test-schema-uid", "Test the schema UID calculation against BAS reference i
       };
       
       expectedUID = "0xe97c0fcc6c37e9f782fd9917e3fa6d22ca1b52d8d936002be4babb55e82dadab";
-      console.log("Using BAS example schema:");
+      console.log("Using default example schema:");
     }
     
     console.log("Schema:", schemaObject);
@@ -83,4 +83,4 @@ task("test-schema-uid", "Test the schema UID calculation against BAS reference i
     }
     
     return formattedUID;
-  }); 
+  });
