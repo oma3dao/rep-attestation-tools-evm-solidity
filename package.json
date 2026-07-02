@@ -4,7 +4,6 @@
     "coverage": "npx c8 --reporter=text --reporter=text-summary --include=utils/** --include=tasks/** --exclude=test/** hardhat test"
   },
   "dependencies": {
-    "@bnb-attestation-service/bas-sdk": "^0.1.0-beta.19",
     "@oma3/omatrust": "0.1.0-alpha.12"
   },
   "devDependencies": {

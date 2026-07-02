@@ -5,12 +5,6 @@ import * as fs from "fs";
 import * as path from "path";
 import { config as dotenvConfig } from "dotenv";
 
-// BAS Schema Registry contract addresses (from official docs)
-export const BAS_SCHEMA_REGISTRY_ADDRESSES = {
-  bscMainnet: "0x5e905F77f59491F03eBB78c204986aaDEB0C6bDa",
-  bscTestnet: "0x08C8b8417313fF130526862f90cd822B55002D72" // SchemaRegistry on BSC Testnet
-};
-
 // EAS Schema Registry contract addresses
 export const EAS_SCHEMA_REGISTRY_ADDRESSES = {
   omachainTestnet: "0x7946127D2f517c8584FdBF801b82F54436EC6FC7",
