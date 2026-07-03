@@ -4,6 +4,7 @@
     "coverage": "npx c8 --reporter=text --reporter=text-summary --include=utils/** --include=tasks/** --exclude=test/** hardhat test"
   },
   "dependencies": {
+    "@ethereum-attestation-service/eas-sdk": "^2.9.1",
     "@oma3/omatrust": "0.1.0-alpha.12"
   },
   "devDependencies": {
