@@ -62,11 +62,11 @@
     "proofs": {
       "type": "array",
       "title": "Proofs",
-      "description": "One or more proofs that demonstrate the two linked IDs have the same ownership.",
+      "description": "One or more proofs that demonstrate the two linked IDs have the same ownership. Optional when verifiers can confirm the link through other means (e.g., controller witness for did:web/did:pkh subjects).",
       "items": {
         "$ref": "common.schema.json#/$defs/Proof"
       },
-      "minItems": 1,
+      "minItems": 0,
       "x-oma3-proof-purpose": "shared-control",
       "x-oma3-proof-types": ["evidence-pointer", "pop-eip712", "pop-jws", "tx-encoded-value"]
     },

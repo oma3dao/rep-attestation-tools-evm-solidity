@@ -18,6 +18,7 @@
     "subject",
     "keyId",
     "keyPurpose",
+    "proofs",
     "issuedAt"
   ],
   "properties": {
@@ -133,11 +134,11 @@
     "proofs": {
       "type": "array",
       "title": "Proofs",
-      "description": "One or more proofs that demonstrate the service's authorization of the key. Optional when verifiers can confirm authorization through other means (e.g., DNS TXT, did.json, or controller witness for did:web/did:pkh subjects).",
+      "description": "One or more proofs that demonstrate the service's authorization of the key.",
       "items": {
         "$ref": "common.schema.json#/$defs/Proof"
       },
-      "minItems": 0,
+      "minItems": 1,
       "x-oma3-proof-purpose": "shared-control",
       "x-oma3-proof-types": ["evidence-pointer", "pop-eip712", "pop-jws", "tx-encoded-value"]
     },
