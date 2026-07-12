@@ -1,8 +1,8 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://reputation.omatrust.org/schemas/certification/attestation/1.3.0.json",
+  "$id": "https://reputation.omatrust.org/schemas/certification/attestation/1.3.1.json",
   "title": "Certification",
-  "description": "Certification bodies use this attestation when a subject passes certification.",
+  "description": "Certification bodies use this attestation when a service passes certification.",
   "type": "object",
   "keywords": ["certification", "compliance", "attestation", "program", "assessment", "reputation"],
   "required": [
@@ -70,7 +70,7 @@
     "subjectURI": {
       "type": "string",
       "format": "uri",
-      "title": "Subject Informational URI",
+      "title": "Service Informational URI",
       "description": "Optional URI that provides mutable, human-readable metadata about the certification recipient.",
       "maxLength": 256
     },
