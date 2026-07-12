@@ -62,6 +62,13 @@
       "maxLength": 256,
       "x-oma3-did-methods": ["web", "pkh", "jwk", "artifact"]
     },
+    "subjectLabel": {
+      "type": "string",
+      "title": "Subject Label",
+      "description": "Human-readable label supplied by the responsible party to identify the subject. This value is descriptive metadata and is not part of the subject's cryptographic identity.",
+      "minLength": 1,
+      "maxLength": 128
+    },
     "responsibilityType": {
       "type": "array",
       "title": "Responsibility Type",
