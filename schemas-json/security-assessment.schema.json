@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://reputation.omatrust.org/schemas/security-assessment/attestation/1.4.0.json",
+  "$id": "https://reputation.omatrust.org/schemas/security-assessment/attestation/1.4.1.json",
   "title": "Security Assessment",
   "description": "Use this form to record a security assessment onchain",
   "type": "object",
@@ -71,7 +71,7 @@
     "versionHW": {
       "type": "string",
       "title": "Hardware Version",
-      "description": "Hardware version of the assessed subject, if applicable.",
+      "description": "Hardware version of the assessed service, if applicable.",
       "maxLength": 50
     },
     "payload": {

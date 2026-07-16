@@ -147,6 +147,14 @@ Schema definitions live in `schemas-json/`. For the full authoring guide — OMA
 
 This repository provides tools for generating and deploying schema definitions for the Ethereum Attestation Service (EAS) on OMAChain Testnet.
 
+### RPC Override
+
+If the default OMAChain RPC endpoint is unreachable, set an environment variable before running tasks:
+
+```bash
+export OMACHAIN_TESTNET_RPC="https://rpc.testnet.chain.oma3.org/"
+```
+
 ### Getting OMAChain Testnet Tokens
 
 To deploy or test on OMAChain Testnet, you will need testnet tokens for gas fees. You can get free OMAChain testnet tokens from the official faucet:
@@ -283,6 +291,29 @@ OMATRUST_SUBJECT_SCOPED_SCHEMA_UIDS=0x...,0x...,0x...
 
 The UIDs are chain-specific — use the deployed UIDs from the `generated/*.deployed.eastest.json` files for the active chain.
 
+#### Step 6: Update Backend Trust Anchors
+
+Add the new schema UID to `omatrust-backend/src/lib/routes/public/trust-anchors.ts`. This file is the source of truth that downstream consumers (SDK, widgets, third-party verifiers) use to discover which schemas are deployed on which chain.
+
+Add an entry to `CHAIN_TRUST_ANCHORS[<chainId>].schemas`:
+
+```typescript
+"your-schema-name": "0x<DEPLOYED_SCHEMA_UID>",
+```
+
+Update the testnet and/or mainnet block depending on where you deployed.
+
+#### Step 7: Add Schema to Relay Allowlist (if applicable)
+
+If the schema should be submittable via delegated attestation (i.e., users sign and the backend relays on-chain), add the deployed UID to the appropriate allowlist environment variable in `omatrust-backend`:
+
+- `OMATRUST_FREE_ALLOWED_SCHEMA_UIDS` — schemas available to free-tier users
+- `OMATRUST_PAID_ALLOWED_SCHEMA_UIDS` — schemas available to paid-tier users
+
+These are comma-separated lists of schema UIDs. A value of `*` allows all schemas.
+
+Add the UID in all deployed environments (Vercel: public-test, Production) where the relay should accept submissions for this schema. Without this step, the relay will reject delegated attestation requests with `403 SCHEMA_NOT_ELIGIBLE`.
+
 #### Complete Deployment Workflow Example
 
 ```bash
@@ -312,7 +343,14 @@ npm run update-schemas ../rep-attestation-tools-evm-solidity
 # 6. Update backend subject-scoped schema UIDs (if schema requires subject ownership)
 # Add the deployed UID to OMATRUST_SUBJECT_SCOPED_SCHEMA_UIDS in omatrust-backend/.env.local
 
-# 7. Verify the updates with git diff
+# 7. Update backend trust anchors (REQUIRED)
+# Add schema UID to CHAIN_TRUST_ANCHORS in omatrust-backend/src/lib/routes/public/trust-anchors.ts
+
+# 8. Add schema to relay allowlist (if schema uses delegated attestation)
+# Add the deployed UID to OMATRUST_FREE_ALLOWED_SCHEMA_UIDS or OMATRUST_PAID_ALLOWED_SCHEMA_UIDS
+# in omatrust-backend Vercel environment variables
+
+# 9. Verify the updates with git diff
 cd ../rep-attestation-frontend
 git diff src/config/schemas.ts
 ```

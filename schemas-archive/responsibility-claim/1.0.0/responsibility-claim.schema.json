@@ -1,0 +1,152 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://reputation.omatrust.org/schemas/responsibility-claim/attestation/1.0.0.json",
+  "title": "Responsibility Claim",
+  "description": "An identity, acting through an authorized key, publicly accepts one or more defined responsibilities for a subject.",
+  "type": "object",
+  "keywords": [
+    "responsibility",
+    "claim",
+    "creator",
+    "distributor",
+    "maintainer",
+    "identity",
+    "did",
+    "attestation",
+    "reputation"
+  ],
+  "required": [
+    "attester",
+    "responsibleParty",
+    "subject",
+    "responsibilityType",
+    "issuedAt"
+  ],
+  "properties": {
+    "@context": {
+      "type": "string",
+      "description": "Optional JSON-LD context URI for semantic processing.",
+      "default": "https://oma3.org/context.jsonld",
+      "maxLength": 256,
+      "x-oma3-skip-reason": "metadata"
+    },
+    "@type": {
+      "type": "string",
+      "description": "Semantic type identifier, typically 'ResponsibilityClaim'.",
+      "default": "ResponsibilityClaim",
+      "maxLength": 100,
+      "x-oma3-skip-reason": "metadata"
+    },
+    "attester": {
+      "type": "string",
+      "title": "Attester ID",
+      "description": "DID or address of the key making this attestation. The attester is expected to be an authorized key for the responsibleParty, verifiable via Key Binding and/or Controller Witness.",
+      "maxLength": 128,
+      "x-oma3-skip-reason": "eas"
+    },
+    "responsibleParty": {
+      "type": "string",
+      "title": "Responsible Party ID",
+      "format": "did",
+      "pattern": "^did:[a-z0-9]+:.+$",
+      "description": "DID of the organization or identity publicly accepting responsibility. The attester must be an authorized key for this identity.",
+      "maxLength": 256,
+      "x-oma3-did-methods": ["web", "pkh", "handle"]
+    },
+    "subject": {
+      "type": "string",
+      "title": "File ID",
+      "format": "did",
+      "pattern": "^did:[a-z0-9]+:.+$",
+      "description": "DID of the resource, service, application, agent, product, or artifact for which responsibility is being claimed.",
+      "maxLength": 256,
+      "x-oma3-did-methods": ["web", "pkh", "jwk", "artifact"]
+    },
+    "subjectLabel": {
+      "type": "string",
+      "title": "File Name",
+      "description": "Human-readable label supplied by the responsible party to identify the content. This value is descriptive metadata and is not part of the subject's cryptographic identity.",
+      "minLength": 1,
+      "maxLength": 128
+    },
+    "responsibilityType": {
+      "type": "array",
+      "title": "Responsibilities",
+      "description": "The complete current set of responsibilities the responsible party accepts for the subject. If responsibilities change, revoke this attestation and publish a replacement with a new array. Partial revocation of individual types is not supported.",
+      "items": {
+        "type": "string",
+        "minLength": 1,
+        "maxLength": 64,
+        "pattern": "^[a-zA-Z0-9\\-\\.]+$",
+        "x-oma3-enum": [
+          {
+            "value": "creator",
+            "label": "Creator",
+            "description": "Original author or maker of the subject. Asserts authorship of the resource."
+          },
+          {
+            "value": "distributor",
+            "label": "Distributor",
+            "description": "Responsible for delivering or distributing the subject through a channel. Covers publishing, mirroring, packaging, app store distribution, and CDN hosting."
+          },
+          {
+            "value": "maintainer",
+            "label": "Maintainer",
+            "description": "Actively maintains the subject. Implies ongoing responsibility for updates, patches, and security fixes."
+          }
+        ]
+      },
+      "minItems": 1,
+      "uniqueItems": true
+    },
+    "revoked": {
+      "type": "boolean",
+      "title": "Revoked",
+      "description": "Indicates if this responsibility claim has been revoked.",
+      "default": false,
+      "x-oma3-skip-reason": "eas"
+    },
+    "revokedAt": {
+      "type": "integer",
+      "minimum": 0,
+      "title": "Revocation Date",
+      "description": "Time the responsibility claim was revoked.",
+      "x-oma3-subtype": "timestamp",
+      "x-oma3-skip-reason": "eas"
+    },
+    "proofs": {
+      "type": "array",
+      "title": "Proofs",
+      "description": "Optional proofs supporting this responsibility claim. In most cases, the attester's authorization is verified separately via Key Binding and Controller Witness. Reserved for future proof types that may directly evidence a responsibility relationship.",
+      "items": {
+        "$ref": "common.schema.json#/$defs/Proof"
+      },
+      "minItems": 0,
+      "x-oma3-skip-reason": "unused"
+    },
+    "issuedAt": {
+      "type": "integer",
+      "minimum": 0,
+      "title": "Issued Date",
+      "description": "Time the responsibility claim was issued. Default is current time.",
+      "x-oma3-subtype": "timestamp",
+      "x-oma3-auto-default": "current-timestamp"
+    },
+    "effectiveAt": {
+      "type": "integer",
+      "minimum": 0,
+      "title": "Effective Date",
+      "description": "Time the responsibility claim becomes effective. Default is current time.",
+      "x-oma3-subtype": "timestamp",
+      "x-oma3-auto-default": "current-timestamp"
+    },
+    "expiresAt": {
+      "type": "integer",
+      "minimum": 0,
+      "title": "Expiration Date",
+      "description": "Time the responsibility claim expires. Default is no expiration.",
+      "x-oma3-subtype": "timestamp"
+    }
+  },
+  "additionalProperties": false
+}

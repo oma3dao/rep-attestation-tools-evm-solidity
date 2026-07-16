@@ -1,8 +1,8 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://reputation.omatrust.org/schemas/keybinding/attestation/1.1.0.json",
+  "$id": "https://reputation.omatrust.org/schemas/keybinding/attestation/1.0.1.json",
   "title": "Key Binding",
-  "description": "Publishes a cryptographic key associated with an ID. Supports multi-purpose bindings, rotation, and revocation. Each attestation binds one key to one service.",
+  "description": "Publishes a cryptographic key associated with a DID. Supports multi-purpose bindings, rotation, and revocation. Each attestation binds one key to one subject.",
   "type": "object",
   "keywords": [
     "key",
@@ -18,6 +18,7 @@
     "subject",
     "keyId",
     "keyPurpose",
+    "proofs",
     "issuedAt"
   ],
   "properties": {
@@ -130,22 +131,14 @@
       "default": false,
       "x-oma3-skip-reason": "eas"
     },
-    "revokedAt": {
-      "type": "integer",
-      "minimum": 0,
-      "title": "Revocation Date",
-      "description": "Time the key binding was revoked. For EAS, this is recorded on-chain natively.",
-      "x-oma3-subtype": "timestamp",
-      "x-oma3-skip-reason": "eas"
-    },
     "proofs": {
       "type": "array",
       "title": "Proofs",
-      "description": "One or more proofs that demonstrate the service's authorization of the key. Optional when verifiers can confirm authorization through other means (e.g., DNS TXT, did.json, or controller witness for did:web/did:pkh IDs).",
+      "description": "One or more proofs that demonstrate the service's authorization of the key.",
       "items": {
         "$ref": "common.schema.json#/$defs/Proof"
       },
-      "minItems": 0,
+      "minItems": 1,
       "x-oma3-proof-purpose": "shared-control",
       "x-oma3-proof-types": ["evidence-pointer", "pop-eip712", "pop-jws", "tx-encoded-value"]
     },
