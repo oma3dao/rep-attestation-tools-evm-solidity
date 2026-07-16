@@ -69,12 +69,12 @@ const config: HardhatUserConfig = {
   solidity: "0.8.24",
   networks: {
     omachainTestnet: {
-      url: "https://rpc.testnet.omachain.org/",
+      url: process.env.OMACHAIN_TESTNET_RPC || "https://rpc.testnet.omachain.org/",
       chainId: 66238,
       accounts: privateKey ? [privateKey] : [],
     },
     omachainMainnet: {
-      url: "https://rpc.omachain.org/",
+      url: process.env.OMACHAIN_MAINNET_RPC || "https://rpc.omachain.org/",
       chainId: 6623,
       accounts: privateKey ? [privateKey] : [],
     },

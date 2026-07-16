@@ -1,0 +1,5 @@
+{
+  "name": "Responsibility-Claim",
+  "schema": "string responsibleParty, string subject, string subjectLabel, string[] responsibilityType, string[] proofs, uint256 issuedAt, uint256 effectiveAt, uint256 expiresAt",
+  "revocable": true
+}

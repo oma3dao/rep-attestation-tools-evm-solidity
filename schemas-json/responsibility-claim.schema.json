@@ -55,7 +55,7 @@
     },
     "subject": {
       "type": "string",
-      "title": "Subject ID",
+      "title": "File ID",
       "format": "did",
       "pattern": "^did:[a-z0-9]+:.+$",
       "description": "DID of the resource, service, application, agent, product, or artifact for which responsibility is being claimed.",
@@ -64,14 +64,14 @@
     },
     "subjectLabel": {
       "type": "string",
-      "title": "Subject Label",
-      "description": "Human-readable label supplied by the responsible party to identify the subject. This value is descriptive metadata and is not part of the subject's cryptographic identity.",
+      "title": "File Name",
+      "description": "Human-readable label supplied by the responsible party to identify the content. This value is descriptive metadata and is not part of the subject's cryptographic identity.",
       "minLength": 1,
       "maxLength": 128
     },
     "responsibilityType": {
       "type": "array",
-      "title": "Responsibility Type",
+      "title": "Responsibilities",
       "description": "The complete current set of responsibilities the responsible party accepts for the subject. If responsibilities change, revoke this attestation and publish a replacement with a new array. Partial revocation of individual types is not supported.",
       "items": {
         "type": "string",
